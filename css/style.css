@@ -1,0 +1,421 @@
+/* ============================================================
+   Minimalist Blog CSS — Inspired by lilianweng.github.io
+   Clean, typography-focused, academic style
+   ============================================================ */
+
+:root {
+    --text-color: #333;
+    --text-light: #666;
+    --text-lighter: #999;
+    --link-color: #0366d6;
+    --link-hover: #014ea0;
+    --bg-color: #fff;
+    --bg-light: #f6f8fa;
+    --border-color: #e1e4e8;
+    --accent-color: #0366d6;
+    --tag-bg: #f1f3f5;
+    --tag-color: #586069;
+    --max-width: 780px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-serif: "Georgia", "Noto Serif SC", serif;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-sans);
+    color: var(--text-color);
+    background: var(--bg-color);
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+a:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
+}
+
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* ---- Header & Navigation ---- */
+
+.site-header {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.02em;
+}
+
+.nav-brand:hover {
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.nav-links a:hover {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+/* ---- Profile Section ---- */
+
+.profile {
+    text-align: center;
+    padding: 2.5rem 0 2rem;
+}
+
+.profile-avatar {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--border-color);
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-name {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.03em;
+}
+
+.profile-bio {
+    color: var(--text-light);
+    font-size: 1.05rem;
+    max-width: 520px;
+    margin: 0 auto 1rem;
+    line-height: 1.7;
+}
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-top: 1rem;
+}
+
+.social-links a {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.social-links a:hover {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+/* ---- Posts Section ---- */
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-lighter);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.posts {
+    padding: 1rem 0 3rem;
+}
+
+.post-item {
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.post-item:last-child {
+    border-bottom: none;
+}
+
+.post-date {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--text-lighter);
+}
+
+.post-tag {
+    background: var(--tag-bg);
+    color: var(--tag-color);
+    padding: 0.1rem 0.55rem;
+    border-radius: 3px;
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+
+.post-title {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.4rem;
+    line-height: 1.45;
+}
+
+.post-title:hover {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+.post-summary {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    line-height: 1.65;
+}
+
+/* ---- Post Content Page ---- */
+
+.post-content {
+    padding: 1rem 0 3rem;
+}
+
+.post-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.post-header .post-meta {
+    font-size: 0.85rem;
+    color: var(--text-lighter);
+    margin-bottom: 0.75rem;
+}
+
+.post-header h1 {
+    font-size: 1.85rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+}
+
+.post-body {
+    font-size: 1.02rem;
+    line-height: 1.8;
+}
+
+.post-body h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border-color);
+    letter-spacing: -0.02em;
+}
+
+.post-body h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.75rem;
+}
+
+.post-body p {
+    margin-bottom: 1.25rem;
+}
+
+.post-body ul,
+.post-body ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.75rem;
+}
+
+.post-body li {
+    margin-bottom: 0.35rem;
+}
+
+.post-body code {
+    font-family: var(--font-mono);
+    background: var(--bg-light);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.post-body pre {
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+}
+
+.post-body pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+.post-body blockquote {
+    border-left: 4px solid var(--border-color);
+    padding: 0.5rem 0 0.5rem 1.25rem;
+    margin: 1.25rem 0;
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.post-body img {
+    max-width: 100%;
+    border-radius: 6px;
+    margin: 1rem 0;
+}
+
+.post-body a {
+    word-break: break-word;
+}
+
+/* ---- Archive & Tags Pages ---- */
+
+.archive-list,
+.tags-list {
+    padding: 1rem 0 3rem;
+}
+
+.archive-year {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.75rem;
+    color: var(--text-color);
+}
+
+.archive-item {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.archive-item time {
+    font-size: 0.85rem;
+    color: var(--text-lighter);
+    min-width: 90px;
+}
+
+.archive-item a {
+    font-size: 0.95rem;
+}
+
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.tag-cloud a {
+    background: var(--tag-bg);
+    color: var(--tag-color);
+    padding: 0.3rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.88rem;
+}
+
+.tag-cloud a:hover {
+    background: var(--border-color);
+    text-decoration: none;
+}
+
+/* ---- About Page ---- */
+
+.about-content {
+    padding: 1rem 0 3rem;
+    line-height: 1.8;
+}
+
+.about-content h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.75rem;
+}
+
+/* ---- Footer ---- */
+
+.site-footer {
+    padding: 2rem 0;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    color: var(--text-lighter);
+    font-size: 0.85rem;
+    margin-top: 2rem;
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 600px) {
+    .nav {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .nav-links {
+        gap: 1rem;
+    }
+
+    .profile-name {
+        font-size: 1.4rem;
+    }
+
+    .post-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .post-body h2 {
+        font-size: 1.2rem;
+    }
+}
