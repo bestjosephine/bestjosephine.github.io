@@ -6,8 +6,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -20,14 +25,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node build.js
-      - name: Prepare deploy folder
+      - name: Prepare site
         run: |
-          mkdir -p _site/css _site/js _site/posts
+          mkdir -p _site/css _site/js
           cp index.html archive.html about.html search.html tags.html _site/
           cp css/style.css _site/css/
           cp js/search.js js/search-index.js _site/js/
-          cp -r posts/*/index.html _site/posts/ 2>/dev/null || true
-          # Copy each post directory (with its index.html)
           for dir in posts/*/; do
             if [ -f "$dir/index.html" ]; then
               slug=$(basename "$dir")
@@ -36,10 +39,16 @@ jobs:
             fi
           done
           touch _site/.nojekyll
-      - uses: JamesIves/github-pages-deploy-action@v4
+      - uses: actions/upload-pages-artifact@v3
         with:
-          branch: gh-pages
-          folder: _site
-          clean-exclude: |
-            .nojekyll
-            CNAME
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
