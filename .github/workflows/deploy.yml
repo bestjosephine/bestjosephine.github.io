@@ -3,14 +3,11 @@ name: Build and Deploy
 on:
   push:
     branches: [main]
-    paths:
-      - 'posts/**/*.md'
-      - 'build.js'
-      - 'package.json'
   workflow_dispatch:
 
 permissions:
   contents: write
+  pages: write
 
 jobs:
   build:
@@ -23,6 +20,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node build.js
+      - name: Add .nojekyll
+        run: touch .nojekyll
       - uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
