@@ -6,6 +6,45 @@
     <title>Tags — Josephine's Blog</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+    <style>
+        .tag-chip { position: relative; cursor: pointer; }
+        .tag-chip.active {
+            background: var(--accent-color);
+            color: #fff;
+        }
+        .tag-chip.active:hover {
+            background: var(--link-hover);
+            color: #fff;
+        }
+        .tag-count {
+            display: inline-block;
+            background: rgba(0,0,0,0.08);
+            color: inherit;
+            font-size: 0.75rem;
+            padding: 0 0.35rem;
+            border-radius: 3px;
+            margin-left: 0.2rem;
+        }
+        .tag-chip.active .tag-count {
+            background: rgba(255,255,255,0.25);
+        }
+        .tag-section {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .tag-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-color);
+        }
+        .tag-section-count {
+            font-size: 0.82rem;
+            font-weight: 400;
+            color: var(--text-lighter);
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -15,6 +54,7 @@
                 <div class="nav-links">
                     <a href="/">Posts</a>
                     <a href="/archive.html">Archive</a>
+                    <a href="/search.html">Search</a>
                     <a href="/tags.html">Tags</a>
                     <a href="/about.html">About</a>
                 </div>
@@ -25,14 +65,48 @@
             <h1 class="section-title" style="margin-top: 1.5rem;">Tags</h1>
             <div class="tags-list">
                 <div class="tag-cloud">
-                    <a href="#">AI</a>
-                    <a href="#">Engineering</a>
-                    <a href="#">Getting Started</a>
-                    <a href="#">LLM</a>
-                    <a href="#">Open Source</a>
-                    <a href="#">System Design</a>
-                    <a href="#">Machine Learning</a>
-                    <a href="#">Books</a>
+                    <a href="#" class="tag-chip" data-tag="Engineering">Engineering <span class="tag-count">1</span></a>
+                    <a href="#" class="tag-chip" data-tag="Getting Started">Getting Started <span class="tag-count">1</span></a>
+                    <a href="#" class="tag-chip" data-tag="Model">Model <span class="tag-count">1</span></a>
+                    <a href="#" class="tag-chip" data-tag="Model, API key">Model, API key <span class="tag-count">1</span></a>
+                    <a href="#" class="tag-chip" data-tag="Test">Test <span class="tag-count">1</span></a>
+                </div>
+                <div id="tagSections">
+                <div class="tag-section" id="tag-Engineering" style="display:none;">
+                    <h3 class="tag-section-title">Engineering <span class="tag-section-count">1 post</span></h3>
+                        <div class="archive-item">
+                            <time datetime="2026-04-20">Apr 20, 2026</time>
+                            <a href="/posts/tech-design-template/">技术方案模版 — 从需求到上线的完整框架</a>
+                        </div>
+                </div>
+                <div class="tag-section" id="tag-Getting%20Started" style="display:none;">
+                    <h3 class="tag-section-title">Getting Started <span class="tag-section-count">1 post</span></h3>
+                        <div class="archive-item">
+                            <time datetime="2026-04-09">Apr 9, 2026</time>
+                            <a href="/posts/hello-world/">Hello World — Welcome to My Blog</a>
+                        </div>
+                </div>
+                <div class="tag-section" id="tag-Model" style="display:none;">
+                    <h3 class="tag-section-title">Model <span class="tag-section-count">1 post</span></h3>
+                        <div class="archive-item">
+                            <time datetime="2026-04-21">Apr 21, 2026</time>
+                            <a href="/posts/model-review/">大模型代码评审方案</a>
+                        </div>
+                </div>
+                <div class="tag-section" id="tag-Model%2C%20API%20key" style="display:none;">
+                    <h3 class="tag-section-title">Model, API key <span class="tag-section-count">1 post</span></h3>
+                        <div class="archive-item">
+                            <time datetime="2026-04-21">Apr 21, 2026</time>
+                            <a href="/posts/get-bailian-api-key/">获取阿里云 DashScope API Key 教程</a>
+                        </div>
+                </div>
+                <div class="tag-section" id="tag-Test" style="display:none;">
+                    <h3 class="tag-section-title">Test <span class="tag-section-count">1 post</span></h3>
+                        <div class="archive-item">
+                            <time datetime="2026-04-21">Apr 21, 2026</time>
+                            <a href="/posts/ci-test/">CI 自动构建测试</a>
+                        </div>
+                </div>
                 </div>
             </div>
         </main>
@@ -41,5 +115,33 @@
             <p>© 2026 Josephine. Powered by curiosity and coffee.</p>
         </footer>
     </div>
+
+    <script>
+    document.querySelectorAll('.tag-chip').forEach(chip => {
+        chip.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tag = this.dataset.tag;
+            const sectionId = 'tag-' + encodeURIComponent(tag);
+            const section = document.getElementById(sectionId);
+
+            // Toggle active state
+            const wasActive = this.classList.contains('active');
+            document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tag-section').forEach(s => s.style.display = 'none');
+
+            if (!wasActive) {
+                this.classList.add('active');
+                if (section) section.style.display = 'block';
+            }
+        });
+    });
+
+    // Handle hash-based tag selection
+    if (window.location.hash) {
+        const tag = decodeURIComponent(window.location.hash.slice(1));
+        const chip = document.querySelector('.tag-chip[data-tag="' + tag + '"]');
+        if (chip) chip.click();
+    }
+    </script>
 </body>
 </html>

@@ -25,7 +25,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f index.html archive.html js/search-index.js
+          git add -f index.html archive.html tags.html js/search-index.js
           find posts -name "index.html" -exec git add -f {} +
           if git diff --cached --quiet; then
             echo "No changes to commit"
