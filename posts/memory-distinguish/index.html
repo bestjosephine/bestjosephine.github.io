@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记忆的分类：情景记忆、工具记忆、工作记忆 — Josephine's Blog</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header class="site-header">
+            <nav class="nav">
+                <a href="/" class="nav-brand">Josephine</a>
+                <div class="nav-links">
+                    <a href="/">Posts</a>
+                    <a href="/archive.html">Archive</a>
+                    <a href="/search.html">Search</a>
+                    <a href="/tags.html">Tags</a>
+                    <a href="/about.html">About</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <article class="post-content">
+                <header class="post-header">
+                    <div class="post-meta">
+                        <time datetime="2026-04-21">Apr 21, 2026</time> · <span class="post-tag">Memory</span>
+                    </div>
+                    <h1>记忆的分类：情景记忆、工具记忆、工作记忆</h1>
+                </header>
+
+                <div class="post-body">
+<blockquote>
+<p>Produced by Qwen-3.6-Plus</p>
+</blockquote>
+<p>这三种记忆类型是现代 <strong>LLM-based AI Agent 认知架构（Cognitive Architecture）</strong> 的核心组件，灵感来源于人类认知心理学，但针对大语言模型的上下文限制、工具调用需求和长程推理能力进行了工程化重构。下面逐一分解其定义、核心技术、设计思想及典型实现。</p>
+<hr>
+<h3>📘 1. Episodic Memory（情景记忆）</h3>
+<h4>🔍 定义与作用</h4>
+<ul>
+<li><strong>心理学原型</strong>：记录个人经历的具体事件（时间、地点、人物、结果），具有时序性和情境依赖性。</li>
+<li><strong>AI Agent 中的映射</strong>：存储 Agent 与用户或环境的<strong>历史交互轨迹</strong>（对话、任务流、状态变化）。由于 LLM 上下文窗口有限，需通过<strong>摘要压缩</strong>将长程经验转化为可检索的紧凑表示，避免信息丢失同时节省 Token 开销。</li>
+</ul>
+<h4>🛠 核心技术与思想</h4>
+<table>
+<thead>
+<tr>
+<th>技术/思想</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>递归摘要（Recursive Summarization）</strong></td>
+<td>将原始对话/日志分块 → LLM 生成局部摘要 → 多轮合并为全局摘要，支持“原始→摘要→元摘要”分层存储</td>
+</tr>
+<tr>
+<td><strong>向量化检索（RAG + Embedding）</strong></td>
+<td>将摘要或关键事件编码为向量，存入 Milvus/Pinecone/FAISS 等向量库，按需语义检索</td>
+</tr>
+<tr>
+<td><strong>时序索引与生命周期管理</strong></td>
+<td>按时间戳、会话 ID、任务类型建立索引；支持 TTL 过期、重要性加权、遗忘机制（模拟人类记忆衰减）</td>
+</tr>
+<tr>
+<td><strong>经验回放（Experience Replay）</strong></td>
+<td>类似强化学习，从历史轨迹中采样高价值片段注入 Prompt，提升少样本泛化能力</td>
+</tr>
+</tbody></table>
+<h4>📦 典型实现</h4>
+<ul>
+<li><code>MemGPT</code> 的 Archival Memory + 自动压缩管道</li>
+<li><code>LangChain</code> 的 <code>ConversationSummaryMemory</code> / <code>ConversationTokenBufferMemory</code></li>
+<li>企业级 Agent 平台的“会话知识库”或“用户画像记忆体”</li>
+</ul>
+<hr>
+<h3>🛠 2. Tool Memory（工具记忆）</h3>
+<h4>🔍 定义与作用</h4>
+<ul>
+<li><strong>心理学原型</strong>：近似“程序性记忆”（Procedural Memory），记录技能与操作模式。</li>
+<li><strong>AI Agent 中的映射</strong>：专门记录<strong>工具调用历史、参数配置、执行结果、成功/失败反馈</strong>。用于：<ul>
+<li>避免重复调用或错误参数</li>
+<li>构建工具使用先验（Few-shot Tool-Use）</li>
+<li>支持调试、回溯与策略优化</li>
+</ul>
+</li>
+</ul>
+<h4>🛠 核心技术与思想</h4>
+<table>
+<thead>
+<tr>
+<th>技术/思想</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>执行轨迹日志（Execution Trace）</strong></td>
+<td>结构化记录 <code>tool_name → args → output → latency → status</code>，通常以 JSON/Graph 形式存储</td>
+</tr>
+<tr>
+<td><strong>工具注册表与 Schema 缓存</strong></td>
+<td>维护工具描述、参数类型、返回值格式，支持动态发现与类型校验</td>
+</tr>
+<tr>
+<td><strong>效果反馈与评分机制</strong></td>
+<td>记录用户显式反馈（✅/❌）或隐式信号（任务完成度、重试次数），用于工具排序或策略微调</td>
+</tr>
+<tr>
+<td><strong>结果缓存与语义去重</strong></td>
+<td>对幂等工具（如搜索、查询）缓存结果；对相似调用进行语义聚类，减少冗余推理</td>
+</tr>
+<tr>
+<td><strong>工具图谱（Tool Graph）</strong></td>
+<td>记录工具间的依赖/互斥关系（如 <code>先调用 A 获取 ID → 再调用 B</code>），支持自动编排</td>
+</tr>
+</tbody></table>
+<h4>📦 典型实现</h4>
+<ul>
+<li><code>LangSmith</code> / <code>OpenTelemetry</code> 的 Trace 记录系统</li>
+<li><code>AutoGen</code> 的 Tool Execution Logger</li>
+<li>自研 Agent 平台的 <code>ToolHistoryDB</code> + 向量相似度匹配缓存</li>
+</ul>
+<hr>
+<h3>⚡ 3. Working Memory（工作记忆）</h3>
+<h4>🔍 定义与作用</h4>
+<ul>
+<li><strong>心理学原型</strong>：短期记忆容量有限（约 7±2 个组块），负责当前任务的主动加工、推理与状态保持。</li>
+<li><strong>AI Agent 中的映射</strong>：维持<strong>当前活跃的推理状态、任务分解栈、中间变量、注意力焦点</strong>。是 Agent 执行 <code>Thought → Action → Observation</code> 循环的“工作台”。</li>
+</ul>
+<h4>🛠 核心技术与思想</h4>
+<table>
+<thead>
+<tr>
+<th>技术/思想</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>上下文窗口管理</strong></td>
+<td>滑动窗口、注意力掩码、关键信息置顶（System Prompt 固定区）</td>
+</tr>
+<tr>
+<td><strong>状态机/图结构（State Graph）</strong></td>
+<td>使用 <code>LangGraph</code>、<code>StateFlow</code> 等显式建模任务状态转移，支持分支、回滚、并发</td>
+</tr>
+<tr>
+<td><strong>堆栈/队列管理（Stack/Queue）</strong></td>
+<td>任务分解为子任务压栈（DFS）或入队（BFS）；支持优先级调度与中断恢复</td>
+</tr>
+<tr>
+<td><strong>推理轨迹显式化</strong></td>
+<td>Chain-of-Thought (CoT)、Tree-of-Thoughts (ToT)、Self-Correction Loop 将中间步骤写入工作记忆</td>
+</tr>
+<tr>
+<td><strong>动态 Prompt 组装</strong></td>
+<td>根据当前栈顶任务动态注入相关上下文、工具描述、约束条件，避免无关信息干扰</td>
+</tr>
+</tbody></table>
+<h4>📦 典型实现</h4>
+<ul>
+<li><code>ReAct</code> / <code>Plan-and-Execute</code> 的 Thought-Action-Observation 循环缓冲区</li>
+<li><code>LangGraph</code> 的 <code>State</code> 对象与 <code>Checkpointer</code></li>
+<li>自研 Agent 的 <code>TaskStack</code> + <code>ActiveContextManager</code></li>
+</ul>
+<hr>
+<h3>🔗 三者协同机制与设计哲学</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>协同逻辑</th>
+<th>核心设计思想</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>数据流</strong></td>
+<td>Working Memory 驱动当前推理 → 调用 Tool → 结果写入 Tool Memory → 关键经验压缩至 Episodic Memory</td>
+<td><strong>分层抽象 + 按需检索</strong>（避免上下文爆炸）</td>
+</tr>
+<tr>
+<td><strong>检索触发</strong></td>
+<td>当 Working Memory 遇到相似任务/工具调用时，从 Episodic/Tool Memory 拉取相关片段注入 Prompt</td>
+<td><strong>Memory-Augmented Generation</strong>（RAG + In-Context Learning）</td>
+</tr>
+<tr>
+<td><strong>更新策略</strong></td>
+<td>工作记忆随任务推进刷新；工具记忆按执行结果增量追加；情景记忆定期异步压缩</td>
+<td><strong>流式处理 + 异步归档</strong>（解耦实时推理与长期存储）</td>
+</tr>
+<tr>
+<td><strong>容错与学习</strong></td>
+<td>失败调用写入 Tool Memory 并标记；成功轨迹压缩为情景记忆；工作记忆通过 CoT 自我修正</td>
+<td><strong>经验驱动的策略演化</strong>（无需梯度更新即可“学习”）</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>🌐 前沿趋势与挑战</h3>
+<ol>
+<li><strong>记忆粒度自适应</strong>：动态决定“哪些信息该保留原始、哪些该压缩”，引入重要性评分模型（如基于信息增益或任务价值）</li>
+<li><strong>跨模态/多智能体记忆共享</strong>：多个 Agent 共用 Tool Memory 或 Episodic Memory，实现群体经验迁移</li>
+<li><strong>记忆与微调的融合</strong>：将高价值记忆自动转化为 SFT/RLHF 数据，实现“记忆→参数”的知识固化</li>
+<li><strong>隐私与合规</strong>：情景记忆需支持用户数据删除、脱敏、联邦存储，符合 GDPR/AI Act 要求</li>
+</ol>
+<hr>
+<h3>💡 总结</h3>
+<table>
+<thead>
+<tr>
+<th>记忆类型</th>
+<th>核心职责</th>
+<th>关键技术</th>
+<th>类比人类认知</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Episodic Memory</strong></td>
+<td>长程经验存储与压缩</td>
+<td>递归摘要、向量检索、生命周期管理</td>
+<td>情景记忆 / 自传体记忆</td>
+</tr>
+<tr>
+<td><strong>Tool Memory</strong></td>
+<td>工具调用历史与效果反馈</td>
+<td>执行 Trace、工具图谱、结果缓存</td>
+<td>程序性记忆 / 技能库</td>
+</tr>
+<tr>
+<td><strong>Working Memory</strong></td>
+<td>当前推理状态与任务栈管理</td>
+<td>状态图、堆栈调度、动态 Prompt</td>
+<td>工作记忆 / 注意力焦点</td>
+</tr>
+</tbody></table>
+<p>这套架构的本质是<strong>用工程化手段模拟人类认知的“有限容量+长期经验+技能积累”机制</strong>，在 LLM 的固定上下文窗口之外，构建可扩展、可检索、可演化的记忆系统，是迈向“自主持续运行 Agent”的关键基础设施。</p>
+                </div>
+            </article>
+        </main>
+
+        <footer class="site-footer">
+            <p>© 2026 Josephine. Powered by curiosity and coffee.</p>
+        </footer>
+    </div>
+</body>
+</html>
