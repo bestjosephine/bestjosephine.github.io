@@ -182,6 +182,10 @@
             font-family: var(--font-mono);
             word-break: break-all;
         }
+        .slug-preview.conflict {
+            color: #dc2626;
+            font-weight: 600;
+        }
 
         /* ---- EasyMDE overrides ---- */
         .EasyMDEContainer {
@@ -389,6 +393,7 @@
     let easyMDE = null;
     let editingPath = null; // track if we're editing an existing file
     let editingSha = null;
+    let editingSlug = null; // original slug when editing
 
     // ── Init ──
     function init() {
@@ -479,7 +484,33 @@
 
     function updateSlugPreview() {
         const slug = document.getElementById('slugInput').value || '...';
-        document.getElementById('slugPreview').textContent = `/posts/${slug}/`;
+        const preview = document.getElementById('slugPreview');
+        preview.textContent = `/posts/${slug}/`;
+        preview.classList.remove('conflict');
+        // Debounced slug conflict check
+        checkSlugConflict(slug);
+    }
+
+    let slugCheckTimer = null;
+    async function checkSlugConflict(slug) {
+        clearTimeout(slugCheckTimer);
+        if (!slug || slug === '...' || !token) return;
+        // Skip check if we're editing and slug hasn't changed
+        if (editingPath && slug === editingSlug) return;
+
+        slugCheckTimer = setTimeout(async () => {
+            try {
+                const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/posts/${slug}/index.md?ref=${BRANCH}`);
+                const preview = document.getElementById('slugPreview');
+                if (res.ok) {
+                    preview.textContent = `/posts/${slug}/ — slug 已存在！`;
+                    preview.classList.add('conflict');
+                } else {
+                    preview.textContent = `/posts/${slug}/`;
+                    preview.classList.remove('conflict');
+                }
+            } catch (e) { /* network error, skip */ }
+        }, 500);
     }
 
     // ── Publish ──
@@ -503,16 +534,29 @@
         showStatus('info', '正在发布到 GitHub...');
 
         try {
-            // Check if file exists (for update)
-            let sha = editingSha || null;
-            if (!sha) {
+            // Determine if this is a new post or editing with the same slug
+            const isNewPost = !editingPath;
+            const slugChanged = editingPath && slug !== editingSlug;
+
+            // Check slug duplication: only when creating new or slug changed during edit
+            if (isNewPost || slugChanged) {
                 try {
                     const existing = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${filePath}?ref=${BRANCH}`);
                     if (existing.ok) {
-                        const data = await existing.json();
-                        sha = data.sha;
+                        btn.disabled = false;
+                        btn.textContent = '发布';
+                        return showStatus('error',
+                            `Slug「${slug}」已被占用，请更换一个不同的 Slug。` +
+                            `<br><span style="font-size:0.82rem;color:#666;">已有文章路径：/posts/${slug}/</span>`
+                        );
                     }
-                } catch (e) { /* file doesn't exist, that's fine */ }
+                } catch (e) { /* 404 = doesn't exist, good to go */ }
+            }
+
+            // For editing with same slug, we need the sha to update
+            let sha = null;
+            if (editingPath && !slugChanged) {
+                sha = editingSha;
             }
 
             const payload = {
@@ -539,6 +583,7 @@
 
             editingPath = null;
             editingSha = null;
+            editingSlug = null;
             document.getElementById('editorTitle').textContent = '新建文章';
             loadPostList();
         } catch (e) {
@@ -559,6 +604,7 @@
         updateSlugPreview();
         editingPath = null;
         editingSha = null;
+        editingSlug = null;
         document.getElementById('editorTitle').textContent = '新建文章';
         hideStatus();
     }
@@ -648,6 +694,7 @@
 
             editingPath = filePath;
             editingSha = data.sha;
+            editingSlug = slug;
             document.getElementById('editorTitle').textContent = '编辑文章';
             hideStatus();
 
