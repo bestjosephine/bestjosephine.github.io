@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Josephine's Blog</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+    <style>
+        /* ---- Admin Layout ---- */
+        .admin-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ---- Auth Screen ---- */
+        .auth-screen {
+            max-width: 480px;
+            margin: 4rem auto;
+            text-align: center;
+        }
+        .auth-screen h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.03em;
+        }
+        .auth-screen p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+        .auth-form {
+            text-align: left;
+        }
+        .auth-form label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.4rem;
+        }
+        .auth-form input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            font-family: var(--font-mono);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: var(--bg-light);
+        }
+        .auth-form input:focus {
+            border-color: var(--accent-color);
+            background: var(--bg-color);
+        }
+        .auth-help {
+            font-size: 0.8rem;
+            color: var(--text-lighter);
+            margin-top: 0.5rem;
+            line-height: 1.6;
+        }
+        .auth-help a {
+            color: var(--link-color);
+        }
+
+        /* ---- Buttons ---- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.7rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: var(--font-sans);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--accent-color);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: var(--link-hover);
+        }
+        .btn-primary:disabled {
+            background: #93c5fd;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+        .btn-logout {
+            font-size: 0.82rem;
+            padding: 0.4rem 0.8rem;
+            background: none;
+            color: var(--text-lighter);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            color: #d32f2f;
+            border-color: #d32f2f;
+        }
+
+        /* ---- Editor Screen ---- */
+        .editor-screen { display: none; }
+
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .editor-header h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        .editor-actions {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        /* ---- Form Fields ---- */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .form-group input,
+        .form-group select {
+            padding: 0.6rem 0.8rem;
+            font-size: 0.95rem;
+            font-family: var(--font-sans);
+            border: 1.5px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+            background: var(--bg-color);
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--accent-color);
+        }
+        .slug-preview {
+            font-size: 0.78rem;
+            color: var(--text-lighter);
+            margin-top: 0.3rem;
+            font-family: var(--font-mono);
+            word-break: break-all;
+        }
+
+        /* ---- EasyMDE overrides ---- */
+        .EasyMDEContainer {
+            margin-bottom: 1.5rem;
+        }
+        .EasyMDEContainer .CodeMirror {
+            font-family: var(--font-mono);
+            font-size: 0.92rem;
+            border-color: var(--border-color);
+            border-radius: 0 0 6px 6px;
+            min-height: 400px;
+        }
+        .EasyMDEContainer .editor-toolbar {
+            border-color: var(--border-color);
+            border-radius: 6px 6px 0 0;
+        }
+        .EasyMDEContainer .editor-toolbar button.active,
+        .EasyMDEContainer .editor-toolbar button:hover {
+            background: var(--bg-light);
+            border-color: var(--border-color);
+        }
+        .editor-preview {
+            font-family: var(--font-sans);
+            line-height: 1.75;
+        }
+
+        /* ---- Status Messages ---- */
+        .status-msg {
+            display: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
+        }
+        .status-msg.success {
+            display: block;
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .status-msg.error {
+            display: block;
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .status-msg.info {
+            display: block;
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        .status-msg a {
+            font-weight: 600;
+        }
+
+        /* ---- Post List ---- */
+        .post-list-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .post-list-section h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-lighter);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+        .post-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .post-list-item:last-child { border-bottom: none; }
+        .post-list-meta {
+            font-size: 0.82rem;
+            color: var(--text-lighter);
+        }
+        .post-list-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .post-list-actions button {
+            font-size: 0.78rem;
+            padding: 0.25rem 0.6rem;
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-light);
+            cursor: pointer;
+            font-family: var(--font-sans);
+            transition: all 0.15s;
+        }
+        .post-list-actions button:hover {
+            background: var(--bg-light);
+            color: var(--text-color);
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .editor-header {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="site-header">
+            <nav class="nav">
+                <a href="/" class="nav-brand">Josephine</a>
+                <div class="nav-links">
+                    <a href="/">Posts</a>
+                    <a href="/archive.html">Archive</a>
+                    <a href="/search.html">Search</a>
+                    <a href="/about.html">About</a>
+                    <a href="/admin.html" style="color:var(--accent-color);font-weight:600;">Admin</a>
+                </div>
+            </nav>
+        </header>
+
+        <!-- ============ Auth Screen ============ -->
+        <div id="authScreen" class="auth-screen">
+            <h1>Blog Admin</h1>
+            <p>输入你的 GitHub Personal Access Token 登录后台，即可在线写作和发布文章。</p>
+            <div class="auth-form">
+                <label for="tokenInput">GitHub Token</label>
+                <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
+                <p class="auth-help">
+                    需要 <code>repo</code> 权限的 Token。
+                    <a href="https://github.com/settings/tokens/new?scopes=repo&description=Blog+Admin" target="_blank" rel="noopener">点此创建 →</a>
+                </p>
+                <br>
+                <button class="btn btn-primary" onclick="handleLogin()" style="width:100%;">登录</button>
+                <div id="authError" class="status-msg" style="margin-top:1rem;"></div>
+            </div>
+        </div>
+
+        <!-- ============ Editor Screen ============ -->
+        <div id="editorScreen" class="editor-screen">
+            <div class="editor-header">
+                <h1 id="editorTitle">新建文章</h1>
+                <div class="editor-actions">
+                    <button class="btn-logout" onclick="handleLogout()">登出</button>
+                    <button class="btn btn-secondary" onclick="handleNew()">新建</button>
+                    <button class="btn btn-primary" id="publishBtn" onclick="handlePublish()">发布</button>
+                </div>
+            </div>
+
+            <div id="statusMsg" class="status-msg"></div>
+
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label for="titleInput">标题</label>
+                    <input type="text" id="titleInput" placeholder="文章标题" oninput="updateSlug()">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="slugInput">Slug (URL路径)</label>
+                    <input type="text" id="slugInput" placeholder="my-post-title" oninput="updateSlugPreview()">
+                    <span class="slug-preview" id="slugPreview">/posts/.../</span>
+                </div>
+                <div class="form-group">
+                    <label for="dateInput">日期</label>
+                    <input type="date" id="dateInput">
+                </div>
+                <div class="form-group">
+                    <label for="tagInput">标签</label>
+                    <input type="text" id="tagInput" placeholder="例如 Engineering">
+                </div>
+            </div>
+
+            <textarea id="mdEditor"></textarea>
+
+            <div id="postListSection" class="post-list-section">
+                <h2>已发布文章</h2>
+                <div id="postList"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Josephine. Powered by curiosity and coffee.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
+    <script>
+    // ── Config ──
+    const OWNER = 'bestjosephine';
+    const REPO = 'bestjosephine.github.io';
+    const BRANCH = 'main';
+    const API = 'https://api.github.com';
+
+    let token = '';
+    let easyMDE = null;
+    let editingPath = null; // track if we're editing an existing file
+    let editingSha = null;
+
+    // ── Init ──
+    function init() {
+        const saved = sessionStorage.getItem('blog_token');
+        if (saved) {
+            token = saved;
+            verifyAndEnter();
+        }
+        setTodayDate();
+    }
+
+    function setTodayDate() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        document.getElementById('dateInput').value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function initEditor() {
+        if (easyMDE) return;
+        easyMDE = new EasyMDE({
+            element: document.getElementById('mdEditor'),
+            spellChecker: false,
+            autosave: { enabled: false },
+            placeholder: '在这里写你的文章内容（支持 Markdown）...',
+            status: ['lines', 'words'],
+            toolbar: [
+                'bold', 'italic', 'heading', '|',
+                'quote', 'unordered-list', 'ordered-list', '|',
+                'link', 'image', 'code', '|',
+                'preview', 'side-by-side', 'fullscreen', '|',
+                'guide'
+            ],
+            minHeight: '400px',
+        });
+    }
+
+    // ── Auth ──
+    async function handleLogin() {
+        const input = document.getElementById('tokenInput');
+        const t = input.value.trim();
+        if (!t) return;
+        token = t;
+        await verifyAndEnter();
+    }
+
+    async function verifyAndEnter() {
+        try {
+            const res = await ghFetch('/user');
+            if (!res.ok) throw new Error('Token 无效或已过期');
+            const user = await res.json();
+
+            sessionStorage.setItem('blog_token', token);
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('editorScreen').style.display = 'block';
+            initEditor();
+            loadPostList();
+        } catch (e) {
+            showMsg('authError', 'error', e.message);
+            sessionStorage.removeItem('blog_token');
+        }
+    }
+
+    function handleLogout() {
+        token = '';
+        sessionStorage.removeItem('blog_token');
+        document.getElementById('authScreen').style.display = 'block';
+        document.getElementById('editorScreen').style.display = 'none';
+    }
+
+    // ── Slug ──
+    function updateSlug() {
+        const title = document.getElementById('titleInput').value;
+        const slug = generateSlug(title);
+        document.getElementById('slugInput').value = slug;
+        updateSlugPreview();
+    }
+
+    function generateSlug(title) {
+        return title
+            .toLowerCase()
+            .replace(/[^\w\u4e00-\u9fff\s-]/g, '')
+            .replace(/[\s_]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 60) || 'untitled';
+    }
+
+    function updateSlugPreview() {
+        const slug = document.getElementById('slugInput').value || '...';
+        document.getElementById('slugPreview').textContent = `/posts/${slug}/`;
+    }
+
+    // ── Publish ──
+    async function handlePublish() {
+        const title = document.getElementById('titleInput').value.trim();
+        const slug = document.getElementById('slugInput').value.trim();
+        const date = document.getElementById('dateInput').value;
+        const tag = document.getElementById('tagInput').value.trim() || 'Uncategorized';
+        const body = easyMDE ? easyMDE.value().trim() : '';
+
+        if (!title) return showStatus('error', '请填写文章标题');
+        if (!slug) return showStatus('error', '请填写 Slug');
+        if (!body) return showStatus('error', '请填写文章内容');
+
+        const frontmatter = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ndate: ${date}\ntag: "${tag.replace(/"/g, '\\"')}"\n---\n\n${body}\n`;
+        const filePath = `posts/${slug}/index.md`;
+
+        const btn = document.getElementById('publishBtn');
+        btn.disabled = true;
+        btn.textContent = '发布中...';
+        showStatus('info', '正在发布到 GitHub...');
+
+        try {
+            // Check if file exists (for update)
+            let sha = editingSha || null;
+            if (!sha) {
+                try {
+                    const existing = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${filePath}?ref=${BRANCH}`);
+                    if (existing.ok) {
+                        const data = await existing.json();
+                        sha = data.sha;
+                    }
+                } catch (e) { /* file doesn't exist, that's fine */ }
+            }
+
+            const payload = {
+                message: sha ? `update: ${title}` : `post: ${title}`,
+                content: btoa(unescape(encodeURIComponent(frontmatter))),
+                branch: BRANCH,
+            };
+            if (sha) payload.sha = sha;
+
+            const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${filePath}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message || '发布失败');
+            }
+
+            showStatus('success',
+                `文章「${title}」已发布！GitHub Actions 正在构建，约 1-2 分钟后可访问 ` +
+                `<a href="/posts/${slug}/" target="_blank">/posts/${slug}/</a>`
+            );
+
+            editingPath = null;
+            editingSha = null;
+            document.getElementById('editorTitle').textContent = '新建文章';
+            loadPostList();
+        } catch (e) {
+            showStatus('error', '发布失败：' + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '发布';
+        }
+    }
+
+    // ── New Post ──
+    function handleNew() {
+        document.getElementById('titleInput').value = '';
+        document.getElementById('slugInput').value = '';
+        document.getElementById('tagInput').value = '';
+        if (easyMDE) easyMDE.value('');
+        setTodayDate();
+        updateSlugPreview();
+        editingPath = null;
+        editingSha = null;
+        document.getElementById('editorTitle').textContent = '新建文章';
+        hideStatus();
+    }
+
+    // ── Load Existing Posts ──
+    async function loadPostList() {
+        const container = document.getElementById('postList');
+        container.innerHTML = '<span style="color:var(--text-lighter);font-size:0.9rem;">加载中...</span>';
+
+        try {
+            // Get posts directory tree
+            const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/posts?ref=${BRANCH}`);
+            if (!res.ok) throw new Error('Failed to load');
+            const dirs = await res.json();
+
+            if (!Array.isArray(dirs) || dirs.length === 0) {
+                container.innerHTML = '<span style="color:var(--text-lighter);font-size:0.9rem;">暂无文章</span>';
+                return;
+            }
+
+            // For each directory, check for index.md
+            const posts = [];
+            for (const dir of dirs) {
+                if (dir.type !== 'dir') continue;
+                try {
+                    const mdRes = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${dir.path}/index.md?ref=${BRANCH}`);
+                    if (mdRes.ok) {
+                        const mdData = await mdRes.json();
+                        const content = decodeURIComponent(escape(atob(mdData.content.replace(/\n/g, ''))));
+                        const meta = parseFrontmatter(content);
+                        posts.push({
+                            slug: dir.name,
+                            path: `${dir.path}/index.md`,
+                            sha: mdData.sha,
+                            title: meta.title || dir.name,
+                            date: meta.date || '',
+                            tag: meta.tag || '',
+                            body: meta.body || '',
+                        });
+                    }
+                } catch (e) { /* skip */ }
+            }
+
+            posts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+            if (posts.length === 0) {
+                container.innerHTML = '<span style="color:var(--text-lighter);font-size:0.9rem;">暂无文章</span>';
+                return;
+            }
+
+            container.innerHTML = posts.map(p => `
+                <div class="post-list-item">
+                    <div>
+                        <span class="post-list-meta">${p.date}</span>
+                        <span class="post-list-title">${escapeHtml(p.title)}</span>
+                    </div>
+                    <div class="post-list-actions">
+                        <button onclick="handleEdit('${p.path}', '${p.sha}')">编辑</button>
+                        <a href="/posts/${p.slug}/" target="_blank" style="font-size:0.78rem;color:var(--text-light);">查看</a>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) {
+            container.innerHTML = '<span style="color:var(--text-lighter);font-size:0.9rem;">加载失败</span>';
+        }
+    }
+
+    // ── Edit Existing Post ──
+    async function handleEdit(filePath, sha) {
+        showStatus('info', '正在加载文章...');
+        try {
+            const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${filePath}?ref=${BRANCH}`);
+            if (!res.ok) throw new Error('加载失败');
+            const data = await res.json();
+            const content = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+            const meta = parseFrontmatter(content);
+
+            document.getElementById('titleInput').value = meta.title || '';
+            document.getElementById('dateInput').value = meta.date || '';
+            document.getElementById('tagInput').value = meta.tag || '';
+            // Extract slug from path: posts/{slug}/index.md
+            const slug = filePath.split('/')[1] || '';
+            document.getElementById('slugInput').value = slug;
+            updateSlugPreview();
+
+            if (easyMDE) easyMDE.value(meta.body || '');
+
+            editingPath = filePath;
+            editingSha = data.sha;
+            document.getElementById('editorTitle').textContent = '编辑文章';
+            hideStatus();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (e) {
+            showStatus('error', '加载文章失败：' + e.message);
+        }
+    }
+
+    // ── Helpers ──
+    function ghFetch(path, options = {}) {
+        return fetch(API + path, {
+            ...options,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json',
+                ...(options.headers || {}),
+            },
+        });
+    }
+
+    function parseFrontmatter(content) {
+        const match = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
+        if (!match) return { body: content };
+        const meta = {};
+        match[1].split('\n').forEach(line => {
+            const idx = line.indexOf(':');
+            if (idx === -1) return;
+            const key = line.slice(0, idx).trim();
+            let val = line.slice(idx + 1).trim();
+            if ((val.startsWith('"') && val.endsWith('"')) ||
+                (val.startsWith("'") && val.endsWith("'"))) {
+                val = val.slice(1, -1);
+            }
+            meta[key] = val;
+        });
+        meta.body = match[2].trim();
+        return meta;
+    }
+
+    function escapeHtml(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function showStatus(type, msg) {
+        const el = document.getElementById('statusMsg');
+        el.className = 'status-msg ' + type;
+        el.innerHTML = msg;
+    }
+
+    function hideStatus() {
+        const el = document.getElementById('statusMsg');
+        el.className = 'status-msg';
+        el.style.display = 'none';
+    }
+
+    function showMsg(id, type, msg) {
+        const el = document.getElementById(id);
+        el.className = 'status-msg ' + type;
+        el.innerHTML = msg;
+    }
+
+    // ── Boot ──
+    init();
+    </script>
+</body>
+</html>
