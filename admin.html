@@ -186,6 +186,12 @@
             color: #dc2626;
             font-weight: 600;
         }
+        .form-group input:disabled {
+            background: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+            border-style: dashed;
+        }
 
         /* ---- EasyMDE overrides ---- */
         .EasyMDEContainer {
@@ -299,6 +305,87 @@
                 align-items: flex-start;
             }
         }
+
+        /* ---- Usage Guide ---- */
+        .guide-section {
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .guide-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-light);
+            font-family: var(--font-sans);
+            padding: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .guide-toggle:hover {
+            color: var(--text-color);
+        }
+        .guide-toggle .arrow {
+            display: inline-block;
+            transition: transform 0.2s;
+            font-size: 0.75rem;
+        }
+        .guide-toggle.open .arrow {
+            transform: rotate(90deg);
+        }
+        .guide-content {
+            display: none;
+            margin-top: 1rem;
+            padding: 1.25rem 1.5rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: var(--text-color);
+        }
+        .guide-content.open {
+            display: block;
+        }
+        .guide-content h3 {
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin: 1.2rem 0 0.5rem 0;
+            color: var(--text-color);
+        }
+        .guide-content h3:first-child {
+            margin-top: 0;
+        }
+        .guide-content p {
+            margin: 0.4rem 0;
+        }
+        .guide-content code {
+            background: #e5e7eb;
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        .guide-content ol, .guide-content ul {
+            margin: 0.4rem 0;
+            padding-left: 1.5rem;
+        }
+        .guide-content li {
+            margin: 0.25rem 0;
+        }
+        .guide-content .guide-tip {
+            margin: 0.8rem 0;
+            padding: 0.6rem 1rem;
+            background: #eff6ff;
+            border-left: 3px solid var(--accent-color);
+            border-radius: 0 6px 6px 0;
+            font-size: 0.85rem;
+            color: #1e40af;
+        }
     </style>
 </head>
 <body>
@@ -373,6 +460,51 @@
             <div id="postListSection" class="post-list-section">
                 <h2>已发布文章</h2>
                 <div id="postList"></div>
+            </div>
+
+            <!-- Usage Guide (admin-only) -->
+            <div class="guide-section">
+                <button class="guide-toggle" onclick="toggleGuide(this)">
+                    <span class="arrow">&#9654;</span> 使用说明
+                </button>
+                <div class="guide-content" id="guideContent">
+                    <h3>1. 登录</h3>
+                    <p>首次使用需要输入 GitHub Personal Access Token（需要 <code>repo</code> 权限）。Token 仅保存在当前浏览器会话中，关闭页面后自动清除。</p>
+                    <p>如果还没有 Token，点击登录页面的"点此创建"链接，会跳转到 GitHub 创建页面，勾选 <code>repo</code> 权限后生成即可。</p>
+
+                    <h3>2. 新建文章</h3>
+                    <ol>
+                        <li>填写<strong>标题</strong>，系统会自动生成 URL 路径（Slug）</li>
+                        <li>可手动修改 Slug，系统会自动检测是否与已有文章冲突</li>
+                        <li>选择<strong>日期</strong>（默认为今天）和填写<strong>标签</strong></li>
+                        <li>在编辑器中使用 Markdown 语法写正文</li>
+                        <li>点击<strong>"发布"</strong>按钮，文章会通过 GitHub API 提交到仓库</li>
+                    </ol>
+                    <div class="guide-tip">发布后 GitHub Actions 会自动构建，约 1-2 分钟后文章即可在线访问。</div>
+
+                    <h3>3. 编辑文章</h3>
+                    <p>在"已发布文章"列表中点击<strong>"编辑"</strong>，文章内容会加载到编辑器中。编辑模式下 URL 路径（Slug）不可修改，以保证已有的链接不会失效。修改完成后点击"发布"即可更新。</p>
+
+                    <h3>4. Markdown 语法</h3>
+                    <p>编辑器支持标准 Markdown，工具栏提供了常用的格式化快捷按钮：</p>
+                    <ul>
+                        <li><strong>加粗</strong>：<code>**文本**</code></li>
+                        <li><em>斜体</em>：<code>*文本*</code></li>
+                        <li>标题：<code># 一级标题</code> <code>## 二级标题</code></li>
+                        <li>链接：<code>[显示文字](URL)</code></li>
+                        <li>图片：<code>![描述](图片URL)</code></li>
+                        <li>代码块：使用三个反引号包裹</li>
+                    </ul>
+                    <p>点击工具栏的 <strong>Preview</strong> 按钮可以实时预览渲染效果。</p>
+
+                    <h3>5. 注意事项</h3>
+                    <ul>
+                        <li>Slug 只允许英文字母、数字和短横线，建议使用有意义的英文短语</li>
+                        <li>标签（Tag）用于文章分类，建议每篇文章设置一个标签</li>
+                        <li>图片需要先上传到图床或 GitHub，然后使用图片链接插入</li>
+                        <li>Token 安全提示：不要在公共设备上保存 Token，使用完毕建议点击"登出"</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -467,6 +599,8 @@
 
     // ── Slug ──
     function updateSlug() {
+        // Don't auto-generate slug when editing (slug is locked)
+        if (editingPath) return;
         const title = document.getElementById('titleInput').value;
         const slug = generateSlug(title);
         document.getElementById('slugInput').value = slug;
@@ -487,8 +621,10 @@
         const preview = document.getElementById('slugPreview');
         preview.textContent = `/posts/${slug}/`;
         preview.classList.remove('conflict');
-        // Debounced slug conflict check
-        checkSlugConflict(slug);
+        // Skip conflict check when editing (slug is locked)
+        if (!editingPath) {
+            checkSlugConflict(slug);
+        }
     }
 
     let slugCheckTimer = null;
@@ -584,6 +720,7 @@
             editingPath = null;
             editingSha = null;
             editingSlug = null;
+            document.getElementById('slugInput').disabled = false;
             document.getElementById('editorTitle').textContent = '新建文章';
             loadPostList();
         } catch (e) {
@@ -598,6 +735,7 @@
     function handleNew() {
         document.getElementById('titleInput').value = '';
         document.getElementById('slugInput').value = '';
+        document.getElementById('slugInput').disabled = false;
         document.getElementById('tagInput').value = '';
         if (easyMDE) easyMDE.value('');
         setTodayDate();
@@ -688,6 +826,7 @@
             // Extract slug from path: posts/{slug}/index.md
             const slug = filePath.split('/')[1] || '';
             document.getElementById('slugInput').value = slug;
+            document.getElementById('slugInput').disabled = true;
             updateSlugPreview();
 
             if (easyMDE) easyMDE.value(meta.body || '');
@@ -761,6 +900,11 @@
     }
 
     // ── Boot ──
+    function toggleGuide(btn) {
+        btn.classList.toggle('open');
+        document.getElementById('guideContent').classList.toggle('open');
+    }
+
     init();
     </script>
 </body>
