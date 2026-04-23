@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflection和Critic机制的关系和区别 — Josephine's Blog</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header class="site-header">
+            <nav class="nav">
+                <a href="/" class="nav-brand">Josephine</a>
+                <div class="nav-links">
+                    <a href="/">Posts</a>
+                    <a href="/archive.html">Archive</a>
+                    <a href="/search.html">Search</a>
+                    <a href="/tags.html">Tags</a>
+                    <a href="/about.html">About</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <article class="post-content">
+                <header class="post-header">
+                    <div class="post-meta">
+                        <time datetime="2026-04-23">Apr 23, 2026</time> · <span class="post-tag">Reflection, Critic</span>
+                    </div>
+                    <h1>Reflection和Critic机制的关系和区别</h1>
+                </header>
+
+                <div class="post-body">
+<blockquote>
+<p>Produced by Qwen-3.6-Plus</p>
+</blockquote>
+<p>Critic 和 Reflection 是<strong>串行关系</strong>，Critic 在前，Reflection 在后。可以理解为 Critic 是&quot;发现问题的眼睛&quot;，Reflection 是&quot;解决问题的大脑&quot;。</p>
+<h3>具体流程</h3>
+<p><strong>第一步：Planner 生成</strong></p>
+<p>主流程调用召回子流程获取知识、策略、工具、案例后，Planner 节点的 LLM 基于这些 context 生成一个初步回复或动作。</p>
+<p><strong>第二步：Critic 检查</strong></p>
+<p>小模型对 Planner 输出做两轮校验：</p>
+<ul>
+<li>幻觉校验 — 把生成内容与召回的知识/ISO 做对比，检查是否有编造成分</li>
+<li>指令遵循校验 — 把生成内容与服务策略做对比，检查是否遵守了策略要求</li>
+</ul>
+<p>Critic 输出一个判定结果：通过 / 不通过。如果通过，直接输出给用户，流程结束。</p>
+<p><strong>第三步：Reflection 诊断（仅在 Critic 不通过时触发）</strong></p>
+<p>Reflection 拿到 Critic 的失败信号后，进一步分析问题的根因，区分两种情况：</p>
+<p><strong>情况 A：召回阶段已有正确答案，但 LLM 没用上。</strong> 这说明是生成环节的问题。Reflection 会在 prompt 中显式标注被忽略的关键信息，加强约束后重新让 Planner 生成。这一步不需要重新召回，只需要重新生成。</p>
+<p><strong>情况 B：召回阶段就没找到合适的答案。</strong> 这说明是检索环节的问题。Reflection 会调整检索策略，比如换关键词、触发定向召回（从指定知识库精准查询），然后带着新的召回结果重新进入 Planner 生成。</p>
+<p><strong>第四步：再次 Critic</strong></p>
+<p>修正后的输出会再过一遍 Critic。如果仍然不通过，可以再循环一次，但为了控制 RT，通常设有最大重试次数（一般 1-2 次）。超过次数后走兜底逻辑（安全回复或转人工）。</p>
+<h3>完整时序</h3>
+<pre><code>Planner 生成
+    ↓
+Critic 检查 ──── 通过 ──→ 输出给用户
+    ↓ 不通过
+Reflection 诊断
+    ↓
+    ├─ 情况A（有答案没用）→ 强化prompt → 重新生成 → 再次 Critic
+    │
+    └─ 情况B（没召回到）→ 调整检索策略 → 重新召回 → 重新生成 → 再次 Critic
+</code></pre>
+<p>所以整个链路是严格串行的：生成 → 检查 → 诊断 → 修正 → 再检查。Reflection 不会在 Critic 之前或同时运行，因为它依赖 Critic 的判定结果来决定修正方向。</p>
+                </div>
+            </article>
+        </main>
+
+        <footer class="site-footer">
+            <p>© 2026 Josephine. Powered by curiosity and coffee.</p>
+        </footer>
+    </div>
+</body>
+</html>
