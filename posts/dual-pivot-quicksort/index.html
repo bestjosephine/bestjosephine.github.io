@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双轴排序 — Josephine's Blog</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header class="site-header">
+            <nav class="nav">
+                <a href="/" class="nav-brand">Josephine</a>
+                <div class="nav-links">
+                    <a href="/">Posts</a>
+                    <a href="/archive.html">Archive</a>
+                    <a href="/search.html">Search</a>
+                    <a href="/tags.html">Tags</a>
+                    <a href="/about.html">About</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <article class="post-content">
+                <header class="post-header">
+                    <div class="post-meta">
+                        <time datetime="2026-04-29">Apr 29, 2026</time> · <span class="post-tag">sort</span>
+                    </div>
+                    <h1>双轴排序</h1>
+                </header>
+
+                <div class="post-body">
+<blockquote>
+<p>Produced by DeepSeek</p>
+</blockquote>
+<h2>一、双轴排序的起源</h2>
+<h3>1.1 单轴快排：时代的经典与局限</h3>
+<p>快速排序是计算机科学中最重要的算法之一。其核心思想是选取一个“轴”（pivot），将数组划分为小于和大于轴的两个区域，然后递归排序。最坏情况发生在每次选取的轴恰好是数组中的最小值或最大值时，这导致递归树极不平衡，时间复杂度退化为 O(n²)。虽然可以通过随机采样等手段降低最坏情况的概率，但理论上无法完全消除。J. Bentley 和 D. McIlroy 在 1990 年代对快排进行了精妙优化，业界一度认为经典快排的潜力已被挖掘殆尽。</p>
+<h3>1.2 双轴快排的诞生与发展</h3>
+<p>2009年，俄罗斯程序员 Vladimir Yaroslavskiy 在其业余时间实验中，发现了一种使用两个轴的双轴快排变体。起初学术界普遍认为多轴策略因分区复杂而得不偿失，但他的实测数据与这一成见截然相反，最终于2011年随 Java 7 发行而成为 <code>Arrays.sort()</code> 对原始类型数组的默认算法。Jonathan Bentley 和 Joshua Bloch 也共同参与了该算法在 Java 实现中的引入工作。</p>
+<h2>二、核心原理与步骤</h2>
+<h3>2.1 算法思想概览</h3>
+<p>Double-Pivot QuickSort 的核心改进，是将原来的一次分为两个部分的“二分法”，升级为一次分为三个部分的“三分法”。算法从待排序数组中选取两个轴 <code>pivot1</code> 和 <code>pivot2</code>，并确保 <code>pivot1 ≤ pivot2</code>，当选取的两个元素不满足此条件时，算法会先交换它们。随后，通过一轮分区，将数组划分为三个区域：</p>
+<ol>
+<li><strong>第一区域</strong> (Region I)：所有元素 <code>&lt; pivot1</code></li>
+<li><strong>第二区域</strong> (Region II)：元素满足 <code>pivot1 ≤ x ≤ pivot2</code>（Java 的实现策略是对右侧的剩余区间依次扫描，一次性将每个元素分配到 L、R、G 三个区域之一）</li>
+<li><strong>第三区域</strong> (Region III)：所有元素 <code>&gt; pivot2</code></li>
+</ol>
+<p>完成分区后，再递归地对三个子区间分别进行同样的双轴快排，直到整个数组有序。</p>
+<h3>2.2 详细算法步骤</h3>
+<p>由于选取的两个轴（如最左和最右元素）可能是数组中极小或极大的值，导致三分区中的某个区域可能为空，无法充分发挥优势。因此，Yaroslavskiy 采用了<strong>非对称扫描</strong>策略：使用三个指针（<code>k</code> 扫描、<code>L</code> 指向 Region II 起点、<code>R</code> 指向 Region II 终点），一次性遍历并将元素归入相应区域，通过非对称划分技巧，有效避免了经典多轴分区中常见的额外开销。</p>
+<center><h3>双轴分区步骤</h3>
+</center><table>
+<thead>
+<tr>
+<th align="left"><strong>步骤</strong></th>
+<th align="left"><strong>操作</strong></th>
+<th align="left"><strong>示例（单个元素）</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>步骤 1</strong></td>
+<td align="left">待处理元素 <code>A[k] &lt; pivot1</code>（属于 Region I）</td>
+<td align="left"><code>A[k]</code> 与 <code>A[L]</code> 交换，<code>k++</code>, <code>L++</code></td>
+</tr>
+<tr>
+<td align="left"><strong>步骤 2</strong></td>
+<td align="left"><code>A[k]</code> 介于 <code>pivot1</code> 和 <code>pivot2</code> 间（属于 Region II）</td>
+<td align="left"><code>k++</code>（仅移动指针，元素已在正确区间）</td>
+</tr>
+<tr>
+<td align="left"><strong>步骤 3</strong></td>
+<td align="left"><code>A[k] &gt; pivot2</code>（属于 Region III）</td>
+<td align="left">从 <code>R</code> 向左扫描，找到适合 Region II 或 Region I 的元素交换，<code>R--</code></td>
+</tr>
+</tbody></table>
+<p><sup>1. 本表基于 <code>k</code> 指针的移动策略</sup></p>
+<ol>
+<li><strong>预处理</strong>：确保左轴 ≤ 右轴。</li>
+<li><strong>初始化</strong>：<code>L = left + 1</code>，<code>k = left + 1</code>，指向待扫描区域起点；<code>R = right - 1</code>，指向待扫描区域终点。</li>
+<li><strong>分区循环</strong>：当 <code>k ≤ R</code> 时循环。若元素小于 <code>pivot1</code>，将其交换至 Region I，<code>L++</code>, <code>k++</code>；若元素大于等于 <code>pivot2</code>，则激活对应处理过程；若元素在中间，直接 <code>k++</code>。</li>
+<li><strong>最终调整</strong>：遍历结束后，交换 <code>pivot1</code> 到 <code>L-1</code>，交换 <code>pivot2</code> 到 <code>R+1</code>。</li>
+</ol>
+<h3>2.3 分区过程的直观示例</h3>
+<p>让我们通过一个具体例子来直观理解双轴分区。假设有一个待排序数组 <code>[5, 3, 8, 4, 2, 7, 1, 6]</code>，选择首尾元素作为双轴：<code>pivot1 = arr[left] = 5</code>，<code>pivot2 = arr[right] = 6</code>。</p>
+<ul>
+<li><strong>初始状态</strong>：<code>L = 1</code>，<code>k = 1</code>，<code>R = 6</code>（索引位置）。</li>
+<li><strong>第一轮（k=1）</strong>：<code>A[1] = 3 &lt; 5</code>（Region I），与 <code>A[L]</code>（即 <code>A[1]</code> 自身）交换，状态不变，<code>L++</code> 变为 2，<code>k++</code> 变为 2。</li>
+<li><strong>第二轮（k=2）</strong>：<code>A[2] = 8 &gt; 6</code>（Region III），从 <code>R</code>（索引6）向左扫描找到小等于6的元素：<code>A[6] = 1 &lt; 6</code>，于是交换 <code>A[2]</code>（8）和 <code>A[6]</code>（1），<code>R--</code> 变为 5。</li>
+<li><strong>第三轮（k=2）</strong>：现在 <code>A[2] = 1 &lt; 5</code>（Region I），与 <code>A[L]</code>（即 <code>A[2]</code> 自身）交换，<code>L++</code> 变为 3，<code>k++</code> 变为 3。</li>
+<li><strong>第四轮（k=3）</strong>：<code>A[3] = 4 &lt; 5</code>（Region I），与 <code>A[L]</code>（<code>A[3]=4</code>）交换，<code>L++</code> 变为 4，<code>k++</code> 变为 4。</li>
+<li><strong>第五轮（k=4）</strong>：<code>A[4] = 2 &lt; 5</code>（Region I），与 <code>A[L]</code>（<code>A[4]=2</code>）交换，<code>L++</code> 变为 5，<code>k++</code> 变为 5。</li>
+<li><strong>第六轮（k=5）</strong>：<code>A[5] = 7 &gt; 6</code>（Region III），从 <code>R</code>（索引5）向左扫描：<code>A[5] = 7 &gt; 6</code>（继续向左），<code>R--</code> 变为 4，此时 <code>k=5 &gt; R=4</code>，结束循环。</li>
+</ul>
+<p>最终分区结果：<code>[3, 1, 4, 2, 5, 7, 8, 6]</code>，交换 <code>pivot1</code> 与 <code>A[L-1]</code>（即 <code>A[4] = 2</code>），交换 <code>pivot2</code> 与 <code>A[R+1]</code>（即 <code>A[6] = 8</code>），得到最终三分区：</p>
+<ul>
+<li>Region I (&lt;5)：<code>[3, 1, 4, 2]</code></li>
+<li>Region II (5~6)：<code>[5, 6]</code></li>
+<li>Region III (&gt;6)：<code>[8, 7]</code></li>
+</ul>
+<p>递归排序各区域即可。</p>
+<h2>三、性能分析与复杂度</h2>
+<h3>3.1 理论分析</h3>
+<p>经典的理论分析显示，在随机排列的大规模数据集上，双轴快排的平均比较次数约为 <code>1.9n ln n</code>，经典单轴快排为 <code>2n ln n</code>，比较次数减少了约 5%；然而双轴快排的平均交换次数约为 <code>0.6n ln n</code>，单轴为 <code>0.33n ln n</code>，交换次数几乎翻倍。</p>
+<h3>3.2 “表象与事实”的深层解读</h3>
+<p>既然理论成本互有优劣，为何双轴快排在实践中总是胜出？<strong>关键在于，现代计算机的性能瓶颈往往不在于比较和交换的“数量”，而在于算法对 CPU 缓存的使用效率</strong>。更具体的机制包括：</p>
+<ul>
+<li><strong>空间局部性</strong>：Yaroslavskiy 算法的非对称扫描模式，使得对 Region I、II、III 的访问呈现出极大的<strong>空间局部性</strong>，对 CPU 缓存非常友好，减少了缓存未命中。虽然表面上做多了不少交换，实际这些交换的数据大多已经在缓存中，其成本比缓存未命中引起的停顿要低好几个数量级。</li>
+<li><strong>分支预测友好</strong>：数据访问的模式化也降低了 CPU 分支预测失败的概率，进一步提升了指令流水线效率。</li>
+<li><strong>Java 字节码层面的反直觉</strong>：一项 2013 年的学术研究发现，Yaroslavskiy 算法在 Java 字节码指令数量上甚至略多于经典快排，但其实际运行时间却更短。这有力地证明了性能的提升并非源于指令条数的减少，而是源于其在现代硬件架构上更优越的执行效率。</li>
+<li><strong>重复元素优化</strong>：双轴快排能更自然地将重复元素归入中间分区，减少了递归深度。</li>
+</ul>
+<h3>3.3 综合复杂度总结</h3>
+<p>尽管平均交换次数有所增加，但因其在现代硬件上优越的缓存和分支预测性能，双轴快排成为对原始类型数组排序的首选算法。以下是各算法性能对比：</p>
+<center><h3>排序算法性能对比</h3>
+</center><table>
+<thead>
+<tr>
+<th align="left"><strong>算法</strong></th>
+<th align="left"><strong>平均时间复杂度</strong></th>
+<th align="left"><strong>额外空间</strong></th>
+<th align="left"><strong>稳定性</strong></th>
+<th align="left"><strong>核心优势</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">经典单轴快排</td>
+<td align="left">O(n log n)</td>
+<td align="left">O(log n) 递归</td>
+<td align="left">不稳定</td>
+<td align="left">实现简单</td>
+</tr>
+<tr>
+<td align="left"><strong>双轴快排</strong></td>
+<td align="left">O(n log n)</td>
+<td align="left">O(log n) 递归</td>
+<td align="left"><strong>不稳定</strong></td>
+<td align="left">缓存友好，Java 7+ <code>Arrays.sort()</code> 对原始类型的 <strong>默认算法</strong></td>
+</tr>
+<tr>
+<td align="left">三向切分</td>
+<td align="left">O(n log n)</td>
+<td align="left">O(log n) 递归</td>
+<td align="left">不稳定</td>
+<td align="left">重复元素优化良好，为现代多轴策略埋下伏笔</td>
+</tr>
+<tr>
+<td align="left">归并 / TimSort</td>
+<td align="left">O(n log n)</td>
+<td align="left">O(n)</td>
+<td align="left"><strong>稳定</strong></td>
+<td align="left">稳定，链表友好</td>
+</tr>
+</tbody></table>
+<p><sup>1. 注：双轴快排和单轴快排都属于“不稳定”排序算法，即相同值的元素在排序后可能改变其先后次序。</sup></p>
+<h3>3.4 为什么双轴快排如此之快？</h3>
+<p>双轴快排的精髓是<strong>以“更多的工作”换取“更好的工作”</strong>。它看似做了更多比较和交换，但精心安排这些工作的顺序，让数据流更好地匹配现代 CPU 的缓存和流水线。当数据在缓存中停留更久、分支预测更准的时候，量变就引发了质变——总体的挂钟时间反而大幅缩短。</p>
+<h2>四、实现及优化细节（以 Java 为例）</h2>
+<h3>4.1 基础 Java 代码</h3>
+<p>Java 的 <code>Arrays.sort()</code> 对于原始类型数组，使用的是 <code>DualPivotQuicksort.sort()</code> 方法。以下是基于 JDK 核心逻辑的完整示例代码，展示了双轴快排的主控流程和分区逻辑：</p>
+<pre><code class="language-java">public class DualPivotQuickSort {
+    // 对外公开的排序接口
+    public static void sort(int[] arr) {
+        if (arr == null || arr.length &lt;= 1) return;
+        sort(arr, 0, arr.length - 1);
+    }
+
+    // 递归排序核心
+    private static void sort(int[] arr, int left, int right) {
+        if (left &gt;= right) return;                     // 递归终止条件
+
+        // 1. 确保 arr[left] &lt;= arr[right]
+        if (arr[left] &gt; arr[right]) {
+            int tmp = arr[left];
+            arr[left] = arr[right];
+            arr[right] = tmp;
+        }
+        int pivot1 = arr[left];
+        int pivot2 = arr[right];
+
+        // 2. 初始化三个指针
+        int less = left + 1;      // Region I 区域边界
+        int great = right - 1;    // Region III 区域边界  
+        int k = less;             // 当前扫描指针
+
+        // 3. 主分区循环
+        while (k &lt;= great) {
+            if (arr[k] &lt; pivot1) {
+                swap(arr, k, less);
+                less++;
+            } else if (arr[k] &gt; pivot2) {
+                while (k &lt; great &amp;&amp; arr[great] &gt; pivot2) {
+                    great--;
+                }
+                swap(arr, k, great);
+                great--;
+                // 交换后，k 位置的新元素可能小于 pivot1，需要再次判断
+                if (arr[k] &lt; pivot1) {
+                    swap(arr, k, less);
+                    less++;
+                }
+            }
+            k++;
+        }
+        // 4. 将两个轴放到正确位置
+        less--;
+        great++;
+
+        // 将 pivot1 放到 Region I 和 Region II 的分界
+        int tmp1 = arr[left];
+        arr[left] = arr[less];
+        arr[less] = tmp1;
+
+        // 将 pivot2 放到 Region II 和 Region III 的分界
+        int tmp2 = arr[right];
+        arr[right] = arr[great];
+        arr[great] = tmp2;
+
+        // 5. 递归处理三个区域
+        sort(arr, left, less - 1);      // Region I（小于 pivot1）
+        sort(arr, less + 1, great - 1); // Region II（介于两轴之间）
+        sort(arr, great + 1, right);    // Region III（大于 pivot2）
+    }
+
+    // 辅助交换函数
+    private static void swap(int[] arr, int i, int j) {
+        int temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+    }
+}
+</code></pre>
+<h3>4.2 Java <code>Arrays.sort</code> 的宏策略</h3>
+<p>Java 的实现并非只使用双轴快速排序，而是根据不同情况选择最优算法：</p>
+<ol>
+<li><strong>小数组（长度 &lt; 47）</strong>：使用<strong>插入排序</strong>。移除了递归带来的函数调用开销，对中小规模数据极为高效。</li>
+<li><strong>中等数组或高度结构化数组</strong>：使用<strong>双轴快速排序</strong>。其平均性能最好，具有自适应性。</li>
+<li><strong>大数组且数据近乎有序（子序列过长）</strong>：切换至<strong>归并排序</strong>。归并排序是稳定的，并在有序数据上表现优异。</li>
+<li><strong>对象数组（如 Integer[]）</strong>：默认使用 <strong>TimSort</strong> 算法，它是归并排序和插入排序的混合体，具备稳定性，并能利用输入数据中的“自然有序”特性，非常适合对象排序。</li>
+</ol>
+<h2>五、总结</h2>
+<p>双轴快排的使用，标志着业界对算法效率的评估从“纯理论分析”进入了“软硬件协同优化”的新阶段，其核心思想是从“做更少的事”转变为“以更高效的方式做事”。<code>Arrays.sort</code> 宏策略的中文表述为：<strong>小数组插排，混杂双轴快，高度有序切归并，对象用 TimSort</strong>，这是 Java 生态中灵活运用多种算法优势的典型案例。下次当你调用 <code>Arrays.sort()</code> 处理数百万个整数时，都可以意识到，你正见证算法史上一个有趣的转折时刻。</p>
+                </div>
+            </article>
+        </main>
+
+        <footer class="site-footer">
+            <p>© 2026 Josephine. Powered by curiosity and coffee.</p>
+        </footer>
+    </div>
+</body>
+</html>
