@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A2A协议 — Josephine's Blog</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header class="site-header">
+            <nav class="nav">
+                <a href="/" class="nav-brand">Josephine</a>
+                <div class="nav-links">
+                    <a href="/">Posts</a>
+                    <a href="/archive.html">Archive</a>
+                    <a href="/search.html">Search</a>
+                    <a href="/tags.html">Tags</a>
+                    <a href="/about.html">About</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <article class="post-content">
+                <header class="post-header">
+                    <div class="post-meta">
+                        <time datetime="2026-04-30">Apr 30, 2026</time> · <span class="post-tag">A2A</span>
+                    </div>
+                    <h1>A2A协议</h1>
+                </header>
+
+                <div class="post-body">
+<blockquote>
+<p>Produced by Qoder</p>
+</blockquote>
+<h3>A2A 是什么</h3>
+<p>A2A（Agent2Agent）是 Google 在 2025 年 4 月发布的一个开放协议，解决的问题是：<strong>AI Agent 之间怎么互相合作</strong>。</p>
+<h3>A2A 和 MCP 的关系</h3>
+<p>MCP 解决的是&quot;AI 怎么调用工具&quot;的问题——AI 是老板，工具是打工仔，老板说干嘛就干嘛。</p>
+<p>但还有一种场景：<strong>两个 AI Agent 需要合作完成一件事</strong>。</p>
+<p>比如你有一个&quot;招聘 Agent&quot;和一个&quot;日程 Agent&quot;，招聘 Agent 筛完简历后想安排面试，它需要跟日程 Agent 商量：&quot;这个候选人下周有空，你帮我找个会议室订个时间？&quot;日程 Agent 可能会回：&quot;下周三下午可以，但需要候选人确认。&quot;</p>
+<p>这不是简单的&quot;调用一个函数&quot;，而是两个 Agent 之间的<strong>协商、对话、来回沟通</strong>。MCP 解决不了这个问题，A2A 就是来解决这个的。</p>
+<pre><code>MCP：  AI  →  工具      （主仆关系，单次调用）
+A2A：  AI  ⇄  AI        （协作关系，多轮对话）
+</code></pre>
+<p>一句话：<strong>MCP 是 AI 和工具之间的协议，A2A 是 AI 和 AI 之间的协议。</strong> 两者互补，不冲突。</p>
+<h3>A2A 的几个核心概念</h3>
+<p>只有四个东西需要记住：</p>
+<h4>1. Agent Card（智能体名片）</h4>
+<p>每个 Agent 对外发布一张&quot;名片&quot;，放在固定地址 <code>/.well-known/agent.json</code>，告诉别人&quot;我是谁、我能干什么&quot;。</p>
+<pre><code class="language-json">// 比如一个&quot;翻译Agent&quot;的名片
+{
+  &quot;name&quot;: &quot;翻译助手&quot;,
+  &quot;description&quot;: &quot;支持中英日韩互译&quot;,
+  &quot;url&quot;: &quot;https://translate-agent.example.com&quot;,
+  &quot;skills&quot;: [
+    { &quot;id&quot;: &quot;translate&quot;, &quot;name&quot;: &quot;文本翻译&quot; },
+    { &quot;id&quot;: &quot;proofread&quot;, &quot;name&quot;: &quot;语法校对&quot; }
+  ],
+  &quot;capabilities&quot;: {
+    &quot;streaming&quot;: true,
+    &quot;pushNotifications&quot;: true
+  }
+}
+</code></pre>
+<p>类比：就像你在钉钉上看别人的个人资料——姓名、部门、擅长什么。其他 Agent 看了这张名片就知道&quot;哦，这个 Agent 能帮我翻译&quot;。</p>
+<h4>2. Task（任务）</h4>
+<p>A2A 里的核心交互单元是&quot;任务&quot;。一个 Agent 给另一个 Agent 派任务，任务有状态流转：</p>
+<pre><code>submitted（已提交）
+    ↓
+working（处理中）
+    ↓
+input-required（需要更多信息）  ← 可能来回几次
+    ↓
+completed（完成）  或  failed（失败）
+</code></pre>
+<p>跟 MCP 最大的区别在这里：MCP 调工具是<strong>一次性的</strong>——调一下，拿到结果，结束。A2A 的任务是<strong>有状态的</strong>，可能持续很长时间，中间可能需要多次沟通。</p>
+<p>比如：</p>
+<pre><code>招聘Agent → 日程Agent：&quot;帮我安排一场面试&quot;     （submitted）
+日程Agent → 招聘Agent：&quot;候选人什么时候有空？&quot;  （input-required）
+招聘Agent → 日程Agent：&quot;下周三或周四&quot;          （working）
+日程Agent → 招聘Agent：&quot;已安排周三下午2点&quot;     （completed）
+</code></pre>
+<h4>3. Message（消息）</h4>
+<p>Agent 之间通过消息沟通。每条消息有角色区分：</p>
+<ul>
+<li><code>user</code> — 客户端 Agent 发的</li>
+<li><code>agent</code> — 服务端 Agent 发的</li>
+</ul>
+<p>消息内容可以包含三种类型：</p>
+<ul>
+<li><strong>TextPart</strong>：纯文本</li>
+<li><strong>FilePart</strong>：文件（图片、PDF 等）</li>
+<li><strong>DataPart</strong>：结构化 JSON 数据</li>
+</ul>
+<p>所以 A2A 天然支持多模态——Agent 之间不仅能聊文字，还能互传文件和结构化数据。</p>
+<h4>4. Artifact（产出物）</h4>
+<p>任务完成时，服务端 Agent 通过 Artifact 返回最终结果。可以是翻译好的文档、生成的图片、分析报告等。</p>
+<h3>通信方式</h3>
+<p>A2A 基于 HTTP + JSON-RPC 2.0（跟 MCP 一样的消息格式），支持三种交互模式：</p>
+<pre><code>1. 请求/响应    —— 简单场景，问一下答一下
+2. SSE 流式    —— 任务处理中实时推送进度
+3. Webhook 推送 —— 长时间任务完成后回调通知
+</code></pre>
+<h3>一个完整的例子</h3>
+<p>假设你有一个&quot;旅行规划 Agent&quot;和一个&quot;机票 Agent&quot;：</p>
+<pre><code>1. 旅行Agent 先看机票Agent 的名片（Agent Card）
+   GET https://flight-agent.com/.well-known/agent.json
+   → &quot;哦，它能搜航班、能订票&quot;
+
+2. 旅行Agent 创建一个任务
+   POST https://flight-agent.com/a2a
+   {
+     &quot;method&quot;: &quot;tasks/send&quot;,
+     &quot;params&quot;: {
+       &quot;id&quot;: &quot;task-001&quot;,
+       &quot;message&quot;: {
+         &quot;role&quot;: &quot;user&quot;,
+         &quot;parts&quot;: [{&quot;type&quot;:&quot;text&quot;, &quot;text&quot;:&quot;搜一下5月1日北京到上海的航班&quot;}]
+       }
+     }
+   }
+
+3. 机票Agent 处理中...可能需要更多信息
+   → 返回 status: &quot;input-required&quot;
+   → &quot;请问偏好经济舱还是商务舱？&quot;
+
+4. 旅行Agent 补充信息
+   → &quot;经济舱，最便宜的&quot;
+
+5. 机票Agent 完成任务
+   → status: &quot;completed&quot;
+   → artifact: [航班列表数据]
+</code></pre>
+<h3>MCP vs A2A 对比</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>MCP</th>
+<th>A2A</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>解决什么</strong></td>
+<td>AI 调用工具</td>
+<td>AI 和 AI 协作</td>
+</tr>
+<tr>
+<td><strong>关系</strong></td>
+<td>主仆（Client 控制 Server）</td>
+<td>对等（两个 Agent 协商）</td>
+</tr>
+<tr>
+<td><strong>交互模式</strong></td>
+<td>无状态，调一次就完</td>
+<td>有状态，多轮对话</td>
+</tr>
+<tr>
+<td><strong>典型场景</strong></td>
+<td>查数据库、调 API、读文件</td>
+<td>跨部门协作、委托任务、多 Agent 工作流</td>
+</tr>
+<tr>
+<td><strong>发现机制</strong></td>
+<td>配置文件写死</td>
+<td>Agent Card，自动发现</td>
+</tr>
+<tr>
+<td><strong>消息内容</strong></td>
+<td>主要是文本</td>
+<td>文本 + 文件 + 结构化数据</td>
+</tr>
+</tbody></table>
+<h3>一句话总结</h3>
+<p><strong>MCP 让 AI 能用工具，A2A 让 AI 能跟 AI 合作。</strong> 未来的 AI 系统很可能两个都用——每个 Agent 通过 MCP 连接自己的工具，通过 A2A 跟其他 Agent 协同工作。</p>
+                </div>
+            </article>
+        </main>
+
+        <footer class="site-footer">
+            <p>© 2026 Josephine. Powered by curiosity and coffee.</p>
+        </footer>
+    </div>
+</body>
+</html>
