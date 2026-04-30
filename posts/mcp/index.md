@@ -6,6 +6,7 @@ tag: "mcp"
 
 > Produced by Qoder
 
+
 ## MCP 是什么？一个给实习生的入门指南
 
 ### 先来一个比喻
