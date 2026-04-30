@@ -827,13 +827,16 @@
             const slug = filePath.split('/')[1] || '';
             document.getElementById('slugInput').value = slug;
             document.getElementById('slugInput').disabled = true;
+
+            // Set editing state BEFORE updateSlugPreview so conflict check is skipped
+            editingPath = filePath;
+            editingSha = data.sha;
+            editingSlug = slug;
+
             updateSlugPreview();
 
             if (easyMDE) easyMDE.value(meta.body || '');
 
-            editingPath = filePath;
-            editingSha = data.sha;
-            editingSlug = slug;
             document.getElementById('editorTitle').textContent = '编辑文章';
             hideStatus();
 
@@ -885,6 +888,7 @@
         const el = document.getElementById('statusMsg');
         el.className = 'status-msg ' + type;
         el.innerHTML = msg;
+        el.style.display = '';  // clear inline style so CSS class takes effect
     }
 
     function hideStatus() {
