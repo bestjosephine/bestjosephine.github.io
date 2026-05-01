@@ -33,9 +33,13 @@
 
                 <div class="post-body">
 <blockquote>
-<p>Produced by DeepSeek</p>
+<p>Produced by DeepSeek(95%) and author(5%)</p>
 </blockquote>
 <p>在 Java 中刷 LeetCode，掌握以下高频技巧可以显著提升编码效率。我将它们分为四大块：排序、类型转换、高级数据结构初始化、以及其他实用操作。</p>
+<h2>求和</h2>
+<p>数组求和</p>
+<pre><code class="language-java">int sum = Arrays.stream(nums).sum();
+</code></pre>
 <h2>一、排序技巧</h2>
 <h3>1. 数组排序</h3>
 <pre><code class="language-java">int[] arr = {3, 1, 4};
@@ -45,6 +49,11 @@ Arrays.sort(arr, 1, 3);           // 部分排序 [索引1到3)
 Integer[] boxed = {3,1,4};
 Arrays.sort(boxed, (a,b)-&gt;b-a);   // 或 Comparator.reverseOrder()
 </code></pre>
+<p>升序用到了双轴排序，而降序用到了 <code>Comparator</code>，所以需要包装类型。</p>
+<p>Java 的 <code>Arrays.sort(int[])</code> 是专门为基本类型 <code>int</code> 设计的重载方法，它内部使用双轴快速排序，<strong>只能按自然顺序（升序）排列</strong>，不能接受自定义的 <code>Comparator</code>。</p>
+<p>而排序降序需要提供一个 <code>Comparator</code>，例如 <code>(a,b) -&gt; b - a</code>。<code>Comparator</code> 是一个泛型接口，其类型参数必须是<strong>引用类型</strong>（如 <code>Integer</code>、<code>String</code> 等），不能是基本类型（如 <code>int</code>）。因此，想要降序排序就必须使用引用类型的数组，即 <code>Integer[]</code>，然后调用 <code>Arrays.sort(T[], Comparator)</code> 方法。</p>
+<p>简单来说：<strong>Java 泛型不支持基本类型</strong>，而 <code>Comparator</code> 依赖泛型，所以只能用包装类型。</p>
+<p>如果实在不想用 <code>Integer[]</code>，也可以对 <code>int[]</code> 升序排序后，再手动反转数组。但这样会多一次遍历，并不比转成 <code>Integer[]</code> 更优。</p>
 <h3>2. List排序</h3>
 <pre><code class="language-java">List&lt;Integer&gt; list = Arrays.asList(3,1,4);
 Collections.sort(list);                          // 升序
@@ -68,6 +77,37 @@ Arrays.sort(strs, Comparator.comparingInt(String::length));
 </code></pre>
 <h2>二、类型转换</h2>
 <h3>1. List &lt;-&gt; 数组</h3>
+<p>在 Java 中，<code>int[]</code> 和 <code>Integer[]</code> 的互转非常常见，主要利用流（Stream）或循环完成。</p>
+<p><code>int[]</code> → <code>Integer[]</code></p>
+<pre><code class="language-java">int[] primitiveArray = {1, 2, 3};
+
+// 方法1：使用 Stream（推荐）
+Integer[] wrapperArray = Arrays.stream(primitiveArray)
+                              .boxed()
+                              .toArray(Integer[]::new);
+
+// 方法2：手动循环
+Integer[] result = new Integer[primitiveArray.length];
+for (int i = 0; i &lt; primitiveArray.length; i++) {
+    result[i] = primitiveArray[i];  // 自动装箱
+}
+</code></pre>
+<p><code>Integer[]</code> → <code>int[]</code></p>
+<pre><code class="language-java">Integer[] wrapperArray = {1, 2, 3};
+
+// 方法1：使用 Stream（推荐）
+int[] primitiveArray = Arrays.stream(wrapperArray)
+                             .mapToInt(Integer::intValue)
+                             .toArray();
+
+// 方法2：手动循环
+int[] result = new int[wrapperArray.length];
+for (int i = 0; i &lt; wrapperArray.length; i++) {
+    result[i] = wrapperArray[i];  // 自动拆箱
+}
+</code></pre>
+<p>若 <code>Integer[]</code> 中包含 <code>null</code>，自动拆箱会抛出 <code>NullPointerException</code>，需提前过滤。</p>
+<p>对于 <code>long</code>/<code>Long</code>、<code>double</code>/<code>Double</code> 等，只需替换对应的映射方法：<code>mapToLong</code>、<code>mapToDouble</code> 等。</p>
 <p><strong>List 转 int[]</strong>（最常用，不需循环）：</p>
 <pre><code class="language-java">List&lt;Integer&gt; list = new ArrayList&lt;&gt;(Arrays.asList(1,2,3));
 // Java 8+
