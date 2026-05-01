@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二叉树 — Josephine's Blog</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header class="site-header">
+            <nav class="nav">
+                <a href="/" class="nav-brand">Josephine</a>
+                <div class="nav-links">
+                    <a href="/">Posts</a>
+                    <a href="/archive.html">Archive</a>
+                    <a href="/search.html">Search</a>
+                    <a href="/tags.html">Tags</a>
+                    <a href="/about.html">About</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <article class="post-content">
+                <header class="post-header">
+                    <div class="post-meta">
+                        <time datetime="2026-05-01">May 1, 2026</time> · <span class="post-tag">leetcode</span>
+                    </div>
+                    <h1>二叉树</h1>
+                </header>
+
+                <div class="post-body">
+<p>我已经快30岁了，已经不想再管二叉树家的事了。</p>
+<h2>二叉树的遍历</h2>
+<h3>1. 递归</h3>
+<p>前序遍历：根节点在前。遍历方式是根→左→右。
+中序遍历：根节点在中。遍历方式是左→根→右。
+后序遍历：根节点在后。遍历方式是左→右→根。</p>
+<pre><code class="language-java">/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+ 
+public void traversal(TreeNode node) {
+    // 边界条件处理
+		if (node == null) return;
+		// ⭐前序 root 节点
+		// 递归左子节点
+		traversal(node.left);
+		// ⭐中序 root 节点
+		// 递归右子节点
+		traversal(node.right);
+		// ⭐后序 root 节点
+}
+</code></pre>
+<h3>2. 迭代</h3>
+<p>迭代真的好难哦！</p>
+<p><strong>前序遍历</strong>：栈。将根节点push进去。循环中，取出栈最上边的节点，读取数字后再依次push右节点和左节点。</p>
+<pre><code class="language-java">public List&lt;Integer&gt; preorder(TreeNode root) {
+    List&lt;Integer&gt; res = new ArrayList&lt;&gt;();
+    if (root == null) return res;
+    Deque&lt;TreeNode&gt; stack = new ArrayDeque&lt;&gt;();
+    stack.push(root);
+    while (!stack.isEmpty()) {
+        TreeNode node = stack.pop();
+        res.add(node.val);
+        if (node.right != null) stack.push(node.right); // 先右后左，保证左先出
+        if (node.left != null) stack.push(node.left);
+    }
+    return res;
+}
+</code></pre>
+<p><strong>中序遍历</strong>：栈+双循环。内循环-把节点存到栈中，直到节点不存在左节点。外循环-更新节点。</p>
+<pre><code class="language-java">public List&lt;Integer&gt; inorder(TreeNode root) {
+    List&lt;Integer&gt; res = new ArrayList&lt;&gt;();
+    Deque&lt;TreeNode&gt; stack = new ArrayDeque&lt;&gt;();
+    TreeNode cur = root;
+    while (cur != null || !stack.isEmpty()) {
+        while (cur != null) {
+            stack.push(cur);
+            cur = cur.left;
+        }
+        cur = stack.pop();
+        res.add(cur.val);
+        cur = cur.right;
+    }
+    return res;
+}
+</code></pre>
+<p><strong>后序遍历</strong>：双栈法。后序遍历是前序遍历的反着来，即从栈的角度来看，是根→右→左。所以栈1就负责先遍历根节点，把根节点 push 进栈2。前序遍历想先打印左节点，需要先push右节点，再push左节点；后序遍历想先打印右节点，需要先push左节点，再push右节点。</p>
+<pre><code class="language-java">public List&lt;Integer&gt; postorder(TreeNode root) {
+    List&lt;Integer&gt; res = new ArrayList&lt;&gt;();
+    if (root == null) return res;
+    Deque&lt;TreeNode&gt; s1 = new ArrayDeque&lt;&gt;();
+    Deque&lt;TreeNode&gt; s2 = new ArrayDeque&lt;&gt;();
+    s1.push(root);
+    while (!s1.isEmpty()) {
+        TreeNode node = s1.pop();
+        s2.push(node);
+				// 先push左节点，再push右节点
+        if (node.left != null) s1.push(node.left);
+        if (node.right != null) s1.push(node.right);
+    }
+    while (!s2.isEmpty()) {
+        res.add(s2.pop().val);
+    }
+    return res;
+}
+</code></pre>
+                </div>
+            </article>
+        </main>
+
+        <footer class="site-footer">
+            <p>© 2026 Josephine. Powered by curiosity and coffee.</p>
+        </footer>
+    </div>
+</body>
+</html>
