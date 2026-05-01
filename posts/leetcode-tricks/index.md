@@ -4,9 +4,16 @@ date: 2026-04-29
 tag: "sort"
 ---
 
-> Produced by DeepSeek
+> Produced by DeepSeek(95%) and author(5%)
 
 在 Java 中刷 LeetCode，掌握以下高频技巧可以显著提升编码效率。我将它们分为四大块：排序、类型转换、高级数据结构初始化、以及其他实用操作。
+
+## 求和
+
+数组求和
+```java
+int sum = Arrays.stream(nums).sum();
+```
 
 ## 一、排序技巧
 
@@ -19,6 +26,16 @@ Arrays.sort(arr, 1, 3);           // 部分排序 [索引1到3)
 Integer[] boxed = {3,1,4};
 Arrays.sort(boxed, (a,b)->b-a);   // 或 Comparator.reverseOrder()
 ```
+
+升序用到了双轴排序，而降序用到了 `Comparator`，所以需要包装类型。
+
+Java 的 `Arrays.sort(int[])` 是专门为基本类型 `int` 设计的重载方法，它内部使用双轴快速排序，**只能按自然顺序（升序）排列**，不能接受自定义的 `Comparator`。
+
+而排序降序需要提供一个 `Comparator`，例如 `(a,b) -> b - a`。`Comparator` 是一个泛型接口，其类型参数必须是**引用类型**（如 `Integer`、`String` 等），不能是基本类型（如 `int`）。因此，想要降序排序就必须使用引用类型的数组，即 `Integer[]`，然后调用 `Arrays.sort(T[], Comparator)` 方法。
+
+简单来说：**Java 泛型不支持基本类型**，而 `Comparator` 依赖泛型，所以只能用包装类型。
+
+如果实在不想用 `Integer[]`，也可以对 `int[]` 升序排序后，再手动反转数组。但这样会多一次遍历，并不比转成 `Integer[]` 更优。
 
 ### 2. List排序
 ```java
@@ -50,6 +67,46 @@ Arrays.sort(strs, Comparator.comparingInt(String::length));
 ## 二、类型转换
 
 ### 1. List <-> 数组
+
+在 Java 中，`int[]` 和 `Integer[]` 的互转非常常见，主要利用流（Stream）或循环完成。
+
+`int[]` → `Integer[]`
+
+```java
+int[] primitiveArray = {1, 2, 3};
+
+// 方法1：使用 Stream（推荐）
+Integer[] wrapperArray = Arrays.stream(primitiveArray)
+                              .boxed()
+                              .toArray(Integer[]::new);
+
+// 方法2：手动循环
+Integer[] result = new Integer[primitiveArray.length];
+for (int i = 0; i < primitiveArray.length; i++) {
+    result[i] = primitiveArray[i];  // 自动装箱
+}
+```
+
+`Integer[]` → `int[]`
+
+```java
+Integer[] wrapperArray = {1, 2, 3};
+
+// 方法1：使用 Stream（推荐）
+int[] primitiveArray = Arrays.stream(wrapperArray)
+                             .mapToInt(Integer::intValue)
+                             .toArray();
+
+// 方法2：手动循环
+int[] result = new int[wrapperArray.length];
+for (int i = 0; i < wrapperArray.length; i++) {
+    result[i] = wrapperArray[i];  // 自动拆箱
+}
+```
+
+若 `Integer[]` 中包含 `null`，自动拆箱会抛出 `NullPointerException`，需提前过滤。
+
+对于 `long`/`Long`、`double`/`Double` 等，只需替换对应的映射方法：`mapToLong`、`mapToDouble` 等。
 
 **List 转 int[]**（最常用，不需循环）：
 ```java
