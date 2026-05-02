@@ -1,0 +1,116 @@
+---
+title: "并查集模板"
+date: 2026-05-02
+tag: "leetcode"
+---
+
+我已经30岁了，还要管并查集的事。
+
+```java
+/**
+ * 并查集（Union-Find）实现，支持按秩合并、路径压缩，并维护连通分量个数
+ * 使用 parent 数组存储每个节点的父节点，rank 数组存储树的秩（高度上界）
+ * count 记录当前图中连通分量的数量
+ */
+public class UnionFind {
+    // parent[i] 表示节点 i 的父节点，根节点的父节点指向自身
+    private int[] parent;
+    
+    // rank[i] 表示以 i 为根节点的树的高度（上界），用于按秩合并优化
+    private int[] rank;
+    
+    // count 记录当前连通分量的个数，初始为 n，每次成功合并减1
+    private int count;
+
+    /**
+     * 构造一个包含 n 个独立元素的并查集
+     * @param n 元素个数，元素编号为 0 ~ n-1
+     */
+    public UnionFind(int n) {
+        parent = new int[n];
+        rank = new int[n];
+        count = n;  // 初始时有 n 个连通分量（每个元素独立）
+        for (int i = 0; i < n; i++) {
+            parent[i] = i;  // 每个元素自成一个集合，父节点指向自己
+            rank[i] = 0;    // 初始树高度为 0
+        }
+    }
+
+    /**
+     * 查找元素 x 所属集合的根节点（代表元）
+     * 使用了路径压缩优化：在查找过程中将路径上的所有节点直接指向根节点
+     * @param x 元素编号
+     * @return x 所在集合的根节点
+     */
+    public int find(int x) {
+        if (parent[x] != x) {
+            parent[x] = find(parent[x]); // 路径压缩
+        }
+        return parent[x];
+    }
+
+    /**
+     * 合并元素 x 和元素 y 所在的集合
+     * 采用按秩合并优化：将秩较小的树连接到秩较大的树上，避免树高度增长
+     * 若合并成功（原本属于不同集合），连通分量个数 count 减 1
+     * @param x 元素 x
+     * @param y 元素 y
+     * @return 如果 x 和 y 原本属于不同集合且合并成功，返回 true；否则返回 false（已属于同一集合）
+     */
+    public boolean union(int x, int y) {
+        int rootX = find(x);
+        int rootY = find(y);
+        
+        // 如果根相同，说明已经属于同一集合，无需合并
+        if (rootX == rootY) {
+            return false;
+        }
+        
+        // 按秩合并：将秩较小的树合并到秩较大的树上
+        if (rank[rootX] < rank[rootY]) {
+            parent[rootX] = rootY;
+        } else if (rank[rootX] > rank[rootY]) {
+            parent[rootY] = rootX;
+        } else {
+            // 两棵树秩相等，任意合并，并增加新根的秩
+            parent[rootY] = rootX;
+            rank[rootX]++;
+        }
+        
+        // 合并成功，连通分量个数减 1
+        count--;
+        return true;
+    }
+
+    /**
+     * 判断元素 x 和元素 y 是否属于同一集合
+     * @param x 元素 x
+     * @param y 元素 y
+     * @return true 表示同一集合，false 表示不同集合
+     */
+    public boolean isConnected(int x, int y) {
+        return find(x) == find(y);
+    }
+
+    /**
+     * 获取元素 x 所在集合的根节点（与 find 相同）
+     * @param x 元素 x
+     * @return 根节点编号
+     */
+    public int getRoot(int x) {
+        return find(x);
+    }
+
+    /**
+     * 返回当前连通分量的个数
+     * @return 连通分量个数
+     */
+    public int getCount() {
+        return count;
+    }
+}
+```
+
+路径压缩：在 find() 中将查找路径上的所有节点直接挂到根上，使树更扁平。
+
+按秩合并：在 union() 中总是将矮树贴到高树上，保持树高为对数级别。
