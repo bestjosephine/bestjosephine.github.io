@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二分查找模板 — Josephine's Blog</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header class="site-header">
+            <nav class="nav">
+                <a href="/" class="nav-brand">Josephine</a>
+                <div class="nav-links">
+                    <a href="/">Posts</a>
+                    <a href="/archive.html">Archive</a>
+                    <a href="/search.html">Search</a>
+                    <a href="/tags.html">Tags</a>
+                    <a href="/about.html">About</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <article class="post-content">
+                <header class="post-header">
+                    <div class="post-meta">
+                        <time datetime="2026-05-03">May 3, 2026</time> · <span class="post-tag">leetcode</span>
+                    </div>
+                    <h1>二分查找模板</h1>
+                </header>
+
+                <div class="post-body">
+<blockquote>
+<p>Produced By DeepSeek</p>
+</blockquote>
+<p>针对二分查找，常见的疑惑在于 <strong>while 条件用 <code>&lt;=</code> 还是 <code>&lt;</code></strong>，以及结束循环后 <strong>返回 <code>left</code>、<code>right</code> 还是 <code>mid</code></strong>。下面给出三种最常用的模板，并逐行注释。</p>
+<hr>
+<h2>1. 模板一：标准查找（查找确切存在的 <code>target</code>）</h2>
+<pre><code class="language-java">int binarySearch(int[] nums, int target) {
+    int left = 0;
+    int right = nums.length - 1;   // 闭区间 [left, right]
+
+    while (left &lt;= right) {        // 当区间不为空时继续
+        int mid = left + (right - left) / 2; // 防止溢出
+        if (nums[mid] == target) {
+            return mid;            // 找到了，直接返回索引
+        } else if (nums[mid] &lt; target) {
+            left = mid + 1;        // 去右半部分（mid 已经比较过）
+        } else {
+            right = mid - 1;       // 去左半部分
+        }
+    }
+    return -1;                     // 没找到
+}
+</code></pre>
+<p><strong>要点</strong>：</p>
+<ul>
+<li><code>left &lt;= right</code> 保证区间 <code>[left, right]</code> 为空时退出（即 <code>left &gt; right</code>）。</li>
+<li>每次缩小范围时，<code>mid</code> 已经被检查，所以 <code>left = mid + 1</code> 或 <code>right = mid - 1</code>。</li>
+<li>找到目标时直接返回 <code>mid</code>；找不到返回 -1。</li>
+</ul>
+<hr>
+<h2>2. 模板二：查找第一个 ≥ target 的位置（下界，用于重复元素或插入位置）</h2>
+<pre><code class="language-java">int lowerBound(int[] nums, int target) {
+    int left = 0;
+    int right = nums.length;       // 右边界为开区间 [left, right)
+
+    while (left &lt; right) {         // 区间不为空（至少一个元素）时继续
+        int mid = left + (right - left) / 2;
+        if (nums[mid] &gt;= target) {
+            right = mid;           // 收缩右边界，mid 可能是答案
+        } else {
+            left = mid + 1;        // mid &lt; target，答案一定在右边
+        }
+    }
+    return left;                   // 第一个 ≥ target 的索引，可能为 nums.length
+}
+</code></pre>
+<p><strong>要点</strong>：</p>
+<ul>
+<li>区间定义为 <code>[left, right)</code> 左闭右开。初始 <code>right = nums.length</code>。</li>
+<li>循环条件 <code>left &lt; right</code>，退出时 <code>left == right</code>，该位置就是答案。</li>
+<li>当 <code>nums[mid] &gt;= target</code> 时，把 <code>right</code> 设为 <code>mid</code>（因为 <code>mid</code> 可能是答案，但右侧更大，所以保留 <code>mid</code>）。</li>
+<li>否则 <code>nums[mid] &lt; target</code>，答案一定在 <code>mid+1</code> 右侧，所以 <code>left = mid + 1</code>。</li>
+<li>返回 <code>left</code>（或 <code>right</code> 相同）：第一个满足 <code>≥ target</code> 的索引。<br>如果所有元素都 <code>&lt; target</code>，则返回 <code>nums.length</code>。</li>
+</ul>
+<hr>
+<h2>3. 模板三：查找最后一个 ≤ target 的位置（上界）</h2>
+<pre><code class="language-java">int upperBound(int[] nums, int target) {
+    int left = 0;
+    int right = nums.length;       // 开区间 [left, right)
+
+    while (left &lt; right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] &lt;= target) {
+            left = mid + 1;        // mid 满足条件，但我们要找最后一个，所以向右试探
+        } else {
+            right = mid;           // mid &gt; target，向左收缩
+        }
+    }
+    return left - 1;               // 最后一个 ≤ target 的索引，可能为 -1
+}
+</code></pre>
+<p><strong>要点</strong>：</p>
+<ul>
+<li>同样左闭右开区间。</li>
+<li>当 <code>nums[mid] &lt;= target</code> 时，答案至少是 <code>mid</code>，尝试向右，所以 <code>left = mid + 1</code>。</li>
+<li>否则 <code>nums[mid] &gt; target</code>，答案在左边，<code>right = mid</code>。</li>
+<li>循环结束时 <code>left</code> 是第一个 <code>&gt; target</code> 的位置，所以 <code>left - 1</code> 就是最后一个 <code>≤ target</code> 的位置。</li>
+</ul>
+<hr>
+<h2>总结「什么时候返回什么」</h2>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>返回什么</th>
+<th>while 条件</th>
+<th>区间表示</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>找确切 target（存在）</td>
+<td>找到返回 <code>mid</code>，否则 -1</td>
+<td><code>left &lt;= right</code></td>
+<td>闭区间 <code>[L,R]</code></td>
+</tr>
+<tr>
+<td>第一个 ≥ target 的位置</td>
+<td>返回 <code>left</code></td>
+<td><code>left &lt; right</code></td>
+<td>左闭右开 <code>[L,R)</code></td>
+</tr>
+<tr>
+<td>最后一个 ≤ target 的位置</td>
+<td>返回 <code>left - 1</code></td>
+<td><code>left &lt; right</code></td>
+<td>左闭右开 <code>[L,R)</code></td>
+</tr>
+</tbody></table>
+<p><strong>核心记忆</strong>：</p>
+<ul>
+<li>闭区间写法：<code>while (left &lt;= right)</code>，结束时 <code>left &gt; right</code>，<code>right</code> 在 <code>left</code> 左边。</li>
+<li>左闭右开写法：<code>while (left &lt; right)</code>，结束时 <code>left == right</code>，该点就是搜索边界。</li>
+</ul>
+<h3>为什么 while 条件要这样设计？</h3>
+<ul>
+<li><strong><code>left &lt;= right</code></strong>：确保区间内还有元素可以检查。当 <code>left == right</code> 时，区间只有一个元素，仍需判断。</li>
+<li><strong><code>left &lt; right</code></strong>：常用于左闭右开，当 <code>left == right</code> 意味着区间为空（因为右开不包含 <code>right</code>），无需再循环。这样能保证循环结束时 <code>left</code> 是有意义的边界值。</li>
+</ul>
+<p>如果你希望理解得更透彻，可以记住 <strong>左闭右开是二分查找“最不容易出错”的写法</strong>，适合处理边界插入、重复元素等问题。</p>
+                </div>
+            </article>
+        </main>
+
+        <footer class="site-footer">
+            <p>© 2026 Josephine. Powered by curiosity and coffee.</p>
+        </footer>
+    </div>
+</body>
+</html>
