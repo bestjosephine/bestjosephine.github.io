@@ -4,6 +4,8 @@ date: 2026-05-15
 tag: "diary"
 ---
 
+> Polished by Claude-4.7-Opus
+
 Recently, I communicated with my former leader. Last month, he was promoted to a vacant but higher position, which means he left our team.
 
 To be honest, I was surprised when he said let's have a talk. In my opinion, if he were not my boss anymore, we wouldn't have any connection at all because we are in two different teams. I didn't understand his behavior or thoughts.
