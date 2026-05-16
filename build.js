@@ -21,6 +21,7 @@ const marked = new Marked({
 
 const ROOT = path.resolve(__dirname);
 const POSTS_DIR = path.join(ROOT, 'posts');
+const CACHE_BUST = `?v=${Date.now()}`;
 
 // ── Post Template ──
 function postTemplate({ title, date, dateDisplay, tag, bodyHtml }) {
@@ -30,7 +31,7 @@ function postTemplate({ title, date, dateDisplay, tag, bodyHtml }) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${escapeHtml(title)} — Josephine's Blog</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css${CACHE_BUST}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
 </head>
 <body>
@@ -90,7 +91,7 @@ function homepageTemplate(posts) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Josephine's Blog</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css${CACHE_BUST}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
 </head>
 <body>
@@ -166,7 +167,7 @@ function archiveTemplate(posts) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive — Josephine's Blog</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css${CACHE_BUST}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
 </head>
 <body>
@@ -238,7 +239,7 @@ function tagsTemplate(posts) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tags — Josephine's Blog</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css${CACHE_BUST}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
     <style>
         .tag-chip { position: relative; cursor: pointer; }
