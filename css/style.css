@@ -319,6 +319,36 @@ a:hover {
     word-break: break-word;
 }
 
+.post-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+    font-size: 0.92rem;
+    overflow-x: auto;
+    display: block;
+}
+
+.post-body thead {
+    background: var(--bg-light);
+}
+
+.post-body th,
+.post-body td {
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    line-height: 1.6;
+}
+
+.post-body th {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.post-body tr:hover {
+    background: var(--bg-light);
+}
+
 /* ---- Search Page ---- */
 
 .search-section {
