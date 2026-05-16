@@ -492,7 +492,7 @@
                         <li><em>斜体</em>：<code>*文本*</code></li>
                         <li>标题：<code># 一级标题</code> <code>## 二级标题</code></li>
                         <li>链接：<code>[显示文字](URL)</code></li>
-                        <li>图片：<code>![描述](图片URL)</code></li>
+                        <li>图片：直接从剪贴板粘贴即可自动上传，也可手写 <code>![描述](图片URL)</code></li>
                         <li>代码块：使用三个反引号包裹</li>
                     </ul>
                     <p>点击工具栏的 <strong>Preview</strong> 按钮可以实时预览渲染效果。</p>
@@ -501,7 +501,7 @@
                     <ul>
                         <li>Slug 只允许英文字母、数字和短横线，建议使用有意义的英文短语</li>
                         <li>标签（Tag）用于文章分类，建议每篇文章设置一个标签</li>
-                        <li>图片需要先上传到图床或 GitHub，然后使用图片链接插入</li>
+                        <li>图片支持直接粘贴上传（截图后 Ctrl/Cmd+V），会自动存储到仓库 <code>images/</code> 目录</li>
                         <li>Token 安全提示：不要在公共设备上保存 Token，使用完毕建议点击"登出"</li>
                     </ul>
                 </div>
@@ -551,7 +551,7 @@
             element: document.getElementById('mdEditor'),
             spellChecker: false,
             autosave: { enabled: false },
-            placeholder: '在这里写你的文章内容（支持 Markdown）...',
+            placeholder: '在这里写你的文章内容（支持 Markdown）...\n\n提示：可直接粘贴剪贴板中的图片，会自动上传。',
             status: ['lines', 'words'],
             toolbar: [
                 'bold', 'italic', 'heading', '|',
@@ -561,6 +561,88 @@
                 'guide'
             ],
             minHeight: '400px',
+        });
+
+        // Enable paste image from clipboard
+        easyMDE.codemirror.on('paste', handleImagePaste);
+    }
+
+    // ── Image Paste & Upload ──
+    async function handleImagePaste(cm, e) {
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+
+        for (const item of items) {
+            if (item.type.startsWith('image/')) {
+                e.preventDefault();
+                const file = item.getAsFile();
+                if (!file) return;
+                await uploadAndInsertImage(cm, file);
+                return;
+            }
+        }
+    }
+
+    async function uploadAndInsertImage(cm, file) {
+        // Generate unique filename with timestamp
+        const ext = file.type.split('/')[1] || 'png';
+        const timestamp = Date.now();
+        const filename = `img-${timestamp}.${ext}`;
+        const filePath = `images/${filename}`;
+
+        // Show uploading placeholder
+        const cursor = cm.getCursor();
+        const placeholder = `![uploading...](uploading-${timestamp})`;
+        cm.replaceRange(placeholder, cursor);
+
+        try {
+            // Read file as base64
+            const base64 = await fileToBase64(file);
+
+            // Upload to GitHub repo
+            const payload = {
+                message: `upload image: ${filename}`,
+                content: base64,
+                branch: BRANCH,
+            };
+
+            const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${filePath}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message || '上传失败');
+            }
+
+            // Replace placeholder with actual image link
+            const imageUrl = `/${filePath}`;
+            const markdown = `![image](${imageUrl})`;
+            const content = cm.getValue();
+            cm.setValue(content.replace(placeholder, markdown));
+
+            showStatus('success', `图片已上传：<code>${filePath}</code>`);
+            // Auto-hide after 3s
+            setTimeout(hideStatus, 3000);
+        } catch (err) {
+            // Remove placeholder on failure
+            const content = cm.getValue();
+            cm.setValue(content.replace(placeholder, ''));
+            showStatus('error', '图片上传失败：' + err.message);
+        }
+    }
+
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                // result is "data:image/png;base64,xxxxx", extract the base64 part
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
         });
     }
 
